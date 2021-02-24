@@ -1,0 +1,1 @@
+{"version":3,"file":"redirect.service.d.ts","sourceRoot":"../../../projects/angular-auth-oidc-client/src/","sources":["lib/utils/redirect/redirect.service.ts"],"names":[],"mappings":";AAGA,qBACa,eAAe;IACI,OAAO,CAAC,QAAQ,CAAC,GAAG;gBAAH,GAAG,EAAE,GAAG;IAEvD,UAAU,CAAC,GAAG,KAAA;iCAHH,eAAe;qCAAf,eAAe;CAM3B"}

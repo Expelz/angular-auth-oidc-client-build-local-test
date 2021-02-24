@@ -1,0 +1,1 @@
+{"version":3,"file":"ensure-clientId.rule.d.ts","sourceRoot":"../../../projects/angular-auth-oidc-client/src/","sources":["lib/config-validation/rules/ensure-clientId.rule.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,mBAAmB,EAAE,MAAM,mCAAmC,CAAC;AACxE,OAAO,EAA8B,oBAAoB,EAAE,MAAM,SAAS,CAAC;AAE3E,eAAO,MAAM,cAAc,iBAAkB,mBAAmB,KAAG,oBAUlE,CAAC"}

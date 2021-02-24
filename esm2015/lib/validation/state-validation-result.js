@@ -1,0 +1,11 @@
+import { ValidationResult } from './validation-result';
+export class StateValidationResult {
+    constructor(accessToken = '', idToken = '', authResponseIsValid = false, decodedIdToken = {}, state = ValidationResult.NotSet) {
+        this.accessToken = accessToken;
+        this.idToken = idToken;
+        this.authResponseIsValid = authResponseIsValid;
+        this.decodedIdToken = decodedIdToken;
+        this.state = state;
+    }
+}
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoic3RhdGUtdmFsaWRhdGlvbi1yZXN1bHQuanMiLCJzb3VyY2VSb290IjoiLi4vLi4vLi4vcHJvamVjdHMvYW5ndWxhci1hdXRoLW9pZGMtY2xpZW50L3NyYy8iLCJzb3VyY2VzIjpbImxpYi92YWxpZGF0aW9uL3N0YXRlLXZhbGlkYXRpb24tcmVzdWx0LnRzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBLE9BQU8sRUFBRSxnQkFBZ0IsRUFBRSxNQUFNLHFCQUFxQixDQUFDO0FBRXZELE1BQU0sT0FBTyxxQkFBcUI7SUFDaEMsWUFDUyxjQUFjLEVBQUUsRUFDaEIsVUFBVSxFQUFFLEVBQ1osc0JBQXNCLEtBQUssRUFDM0IsaUJBQXNCLEVBQUUsRUFDeEIsUUFBMEIsZ0JBQWdCLENBQUMsTUFBTTtRQUpqRCxnQkFBVyxHQUFYLFdBQVcsQ0FBSztRQUNoQixZQUFPLEdBQVAsT0FBTyxDQUFLO1FBQ1osd0JBQW1CLEdBQW5CLG1CQUFtQixDQUFRO1FBQzNCLG1CQUFjLEdBQWQsY0FBYyxDQUFVO1FBQ3hCLFVBQUssR0FBTCxLQUFLLENBQTRDO0lBQ3ZELENBQUM7Q0FDTCIsInNvdXJjZXNDb250ZW50IjpbImltcG9ydCB7IFZhbGlkYXRpb25SZXN1bHQgfSBmcm9tICcuL3ZhbGlkYXRpb24tcmVzdWx0JztcclxuXHJcbmV4cG9ydCBjbGFzcyBTdGF0ZVZhbGlkYXRpb25SZXN1bHQge1xyXG4gIGNvbnN0cnVjdG9yKFxyXG4gICAgcHVibGljIGFjY2Vzc1Rva2VuID0gJycsXHJcbiAgICBwdWJsaWMgaWRUb2tlbiA9ICcnLFxyXG4gICAgcHVibGljIGF1dGhSZXNwb25zZUlzVmFsaWQgPSBmYWxzZSxcclxuICAgIHB1YmxpYyBkZWNvZGVkSWRUb2tlbjogYW55ID0ge30sXHJcbiAgICBwdWJsaWMgc3RhdGU6IFZhbGlkYXRpb25SZXN1bHQgPSBWYWxpZGF0aW9uUmVzdWx0Lk5vdFNldFxyXG4gICkge31cclxufVxyXG4iXX0=

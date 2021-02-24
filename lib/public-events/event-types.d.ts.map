@@ -1,0 +1,1 @@
+{"version":3,"file":"event-types.d.ts","sourceRoot":"../../../projects/angular-auth-oidc-client/src/","sources":["lib/public-events/event-types.ts"],"names":[],"mappings":"AACA,oBAAY,UAAU;IACpB;;OAEG;IACH,YAAY,IAAA;IACZ,mBAAmB,IAAA;IACnB,oBAAoB,IAAA;IACpB,eAAe,IAAA;IACf,sBAAsB,IAAA;IACtB,YAAY,IAAA;IACZ,cAAc,IAAA;IACd,mBAAmB,IAAA;CACpB"}

@@ -1,0 +1,1 @@
+{"version":3,"file":"notification.d.ts","sourceRoot":"../../../projects/angular-auth-oidc-client/src/","sources":["lib/public-events/notification.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,UAAU,EAAE,MAAM,eAAe,CAAC;AAE3C,MAAM,WAAW,sBAAsB,CAAC,CAAC;IACvC,IAAI,EAAE,UAAU,CAAC;IACjB,KAAK,CAAC,EAAE,CAAC,CAAC;CACX"}

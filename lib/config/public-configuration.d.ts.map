@@ -1,0 +1,1 @@
+{"version":3,"file":"public-configuration.d.ts","sourceRoot":"../../../projects/angular-auth-oidc-client/src/","sources":["lib/config/public-configuration.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,sBAAsB,EAAE,MAAM,6BAA6B,CAAC;AACrE,OAAO,EAAE,mBAAmB,EAAE,MAAM,wBAAwB,CAAC;AAE7D,MAAM,WAAW,mBAAmB;IAClC,aAAa,EAAE,mBAAmB,CAAC;IACnC,SAAS,EAAE,sBAAsB,CAAC;CACnC"}

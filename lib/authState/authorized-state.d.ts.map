@@ -1,0 +1,1 @@
+{"version":3,"file":"authorized-state.d.ts","sourceRoot":"../../../projects/angular-auth-oidc-client/src/","sources":["lib/authState/authorized-state.ts"],"names":[],"mappings":"AACA,oBAAY,eAAe;IACzB,UAAU,eAAe;IACzB,YAAY,iBAAiB;IAC7B,OAAO,YAAY;CACpB"}

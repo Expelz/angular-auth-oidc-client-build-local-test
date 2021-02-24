@@ -1,0 +1,1 @@
+{"version":3,"file":"ensure-sts-server.rule.d.ts","sourceRoot":"../../../projects/angular-auth-oidc-client/src/","sources":["lib/config-validation/rules/ensure-sts-server.rule.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,mBAAmB,EAAE,MAAM,mCAAmC,CAAC;AACxE,OAAO,EAA8B,oBAAoB,EAAE,MAAM,SAAS,CAAC;AAE3E,eAAO,MAAM,eAAe,iBAAkB,mBAAmB,KAAG,oBAUnE,CAAC"}
