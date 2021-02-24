@@ -1,16 +1,16 @@
-import { TabsSynchronizationService } from './../iframe/tabs-synchronization.service';
 import { AuthStateService } from '../authState/auth-state.service';
 import { ConfigurationProvider } from '../config/config.provider';
 import { FlowsDataService } from '../flows/flows-data.service';
 import { FlowsService } from '../flows/flows.service';
 import { RefreshSessionIframeService } from '../iframe/refresh-session-iframe.service';
 import { LoggerService } from '../logging/logger.service';
+import { PublicEventsService } from '../public-events/public-events.service';
 import { StoragePersistanceService } from '../storage/storage-persistance.service';
 import { UserService } from '../userData/user-service';
 import { FlowHelper } from '../utils/flowHelper/flow-helper.service';
+import { TabsSynchronizationService } from './../iframe/tabs-synchronization.service';
 import { IntervallService } from './intervall.service';
 import { RefreshSessionRefreshTokenService } from './refresh-session-refresh-token.service';
-import { PublicEventsService } from '../public-events/public-events.service';
 import * as i0 from "@angular/core";
 export declare class PeriodicallyTokenCheckService {
     private flowsService;

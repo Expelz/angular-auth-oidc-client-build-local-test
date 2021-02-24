@@ -2448,7 +2448,7 @@ class TabsSynchronizationService {
                 const isLeader = this._elector.isLeader;
                 console.warn(`isLeaderCheck > prefix: ${this._prefix} > currentRandomId: ${this._currentRandomId} > inside setTimeout isLeader = ${isLeader}`);
                 resolve(isLeader);
-            }, 4000);
+            }, 1000);
         });
     }
     addHandlerOnSilentRenewFinishedChannel(handler) {

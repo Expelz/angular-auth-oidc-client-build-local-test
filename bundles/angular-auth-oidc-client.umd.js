@@ -2933,7 +2933,7 @@
                     var isLeader = _this._elector.isLeader;
                     console.warn("isLeaderCheck > prefix: " + _this._prefix + " > currentRandomId: " + _this._currentRandomId + " > inside setTimeout isLeader = " + isLeader);
                     resolve(isLeader);
-                }, 4000);
+                }, 1000);
             });
         };
         TabsSynchronizationService.prototype.addHandlerOnSilentRenewFinishedChannel = function (handler) {
