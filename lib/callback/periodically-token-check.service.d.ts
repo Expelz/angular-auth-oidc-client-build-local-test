@@ -4,7 +4,6 @@ import { FlowsDataService } from '../flows/flows-data.service';
 import { FlowsService } from '../flows/flows.service';
 import { RefreshSessionIframeService } from '../iframe/refresh-session-iframe.service';
 import { LoggerService } from '../logging/logger.service';
-import { PublicEventsService } from '../public-events/public-events.service';
 import { StoragePersistanceService } from '../storage/storage-persistance.service';
 import { UserService } from '../userData/user-service';
 import { FlowHelper } from '../utils/flowHelper/flow-helper.service';
@@ -25,8 +24,7 @@ export declare class PeriodicallyTokenCheckService {
     private intervalService;
     private storagePersistanceService;
     private tabsSynchronizationService;
-    private publicEventsService;
-    constructor(flowsService: FlowsService, flowHelper: FlowHelper, configurationProvider: ConfigurationProvider, flowsDataService: FlowsDataService, loggerService: LoggerService, userService: UserService, authStateService: AuthStateService, refreshSessionIframeService: RefreshSessionIframeService, refreshSessionRefreshTokenService: RefreshSessionRefreshTokenService, intervalService: IntervallService, storagePersistanceService: StoragePersistanceService, tabsSynchronizationService: TabsSynchronizationService, publicEventsService: PublicEventsService);
+    constructor(flowsService: FlowsService, flowHelper: FlowHelper, configurationProvider: ConfigurationProvider, flowsDataService: FlowsDataService, loggerService: LoggerService, userService: UserService, authStateService: AuthStateService, refreshSessionIframeService: RefreshSessionIframeService, refreshSessionRefreshTokenService: RefreshSessionRefreshTokenService, intervalService: IntervallService, storagePersistanceService: StoragePersistanceService, tabsSynchronizationService: TabsSynchronizationService);
     startTokenValidationPeriodically(repeatAfterSeconds: number): void;
     static ɵfac: i0.ɵɵFactoryDef<PeriodicallyTokenCheckService, never>;
     static ɵprov: i0.ɵɵInjectableDef<PeriodicallyTokenCheckService>;

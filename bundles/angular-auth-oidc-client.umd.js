@@ -2897,16 +2897,44 @@
     })();
 
     var TabsSynchronizationService = /** @class */ (function () {
-        function TabsSynchronizationService(configurationProvider) {
+        function TabsSynchronizationService(configurationProvider, publicEventsService, loggerService) {
             this.configurationProvider = configurationProvider;
+            this.publicEventsService = publicEventsService;
+            this.loggerService = loggerService;
             this._isLeaderSubjectInitialized = false;
+            this._silentRenewFinished$ = new rxjs.ReplaySubject();
             this._currentRandomId = Math.random().toString(36).substr(2, 9) + "_" + new Date().getUTCMilliseconds();
             this.Initialization();
         }
+        TabsSynchronizationService.prototype.isLeaderCheck = function () {
+            var _this = this;
+            return new Promise(function (resolve) {
+                _this.loggerService.logDebug("isLeaderCheck > prefix: " + _this._prefix + " > currentRandomId: " + _this._currentRandomId);
+                if (!_this._isLeaderSubjectInitialized) {
+                    _this.loggerService.logWarning("isLeaderCheck > prefix: " + _this._prefix + " > currentRandomId: " + _this._currentRandomId + " > leader subject doesn't initialized");
+                    resolve(false);
+                    return;
+                }
+                setTimeout(function () {
+                    var isLeader = _this._elector.isLeader;
+                    _this.loggerService.logWarning("isLeaderCheck > prefix: " + _this._prefix + " > currentRandomId: " + _this._currentRandomId + " > inside setTimeout isLeader = " + isLeader);
+                    resolve(isLeader);
+                }, 1000);
+            });
+        };
+        TabsSynchronizationService.prototype.getSilentRenewFinishedObservable = function () {
+            return this._silentRenewFinished$.asObservable();
+        };
+        TabsSynchronizationService.prototype.sendSilentRenewFinishedNotification = function () {
+            if (!this._silentRenewFinishedChannel) {
+                this._silentRenewFinishedChannel = new broadcastChannel.BroadcastChannel(this._prefix + "_silent_renew_finished");
+            }
+            this._silentRenewFinishedChannel.postMessage("Silent renew finished by _currentRandomId " + this._currentRandomId);
+        };
         TabsSynchronizationService.prototype.Initialization = function () {
             var _this = this;
             var _a;
-            console.log('TabsSynchronizationService > Initialization started');
+            this.loggerService.logDebug('TabsSynchronizationService > Initialization started');
             this._prefix = ((_a = this.configurationProvider.openIDConfiguration) === null || _a === void 0 ? void 0 : _a.clientId) || '';
             var channel = new broadcastChannel.BroadcastChannel(this._prefix + "_leader");
             this._elector = broadcastChannel.createLeaderElection(channel, {
@@ -2917,50 +2945,32 @@
                 if (!_this._isLeaderSubjectInitialized) {
                     _this._isLeaderSubjectInitialized = true;
                 }
-                console.log("this tab is now leader > prefix: " + _this._prefix + " > currentRandomId: " + _this._currentRandomId);
+                _this.loggerService.logDebug("this tab is now leader > prefix: " + _this._prefix + " > currentRandomId: " + _this._currentRandomId);
             });
+            this.initializeSilentRenewFinishedChannelWithHandler();
         };
-        TabsSynchronizationService.prototype.isLeaderCheck = function () {
+        TabsSynchronizationService.prototype.initializeSilentRenewFinishedChannelWithHandler = function () {
             var _this = this;
-            return new Promise(function (resolve) {
-                console.log("isLeaderCheck > prefix: " + _this._prefix + " > currentRandomId: " + _this._currentRandomId);
-                if (!_this._isLeaderSubjectInitialized) {
-                    console.warn("isLeaderCheck > prefix: " + _this._prefix + " > currentRandomId: " + _this._currentRandomId + " > leader subject doesn't initialized");
-                    resolve(false);
-                    return;
-                }
-                setTimeout(function () {
-                    var isLeader = _this._elector.isLeader;
-                    console.warn("isLeaderCheck > prefix: " + _this._prefix + " > currentRandomId: " + _this._currentRandomId + " > inside setTimeout isLeader = " + isLeader);
-                    resolve(isLeader);
-                }, 1000);
-            });
-        };
-        TabsSynchronizationService.prototype.addHandlerOnSilentRenewFinishedChannel = function (handler) {
-            if (!this._silentRenewFinishedChannel) {
-                this._silentRenewFinishedChannel = new broadcastChannel.BroadcastChannel(this._prefix + "_silent_renew_finished");
-            }
-            this._silentRenewFinishedChannel.onmessage = handler;
-        };
-        TabsSynchronizationService.prototype.silentRenewFinishedNotification = function () {
-            if (!this._silentRenewFinishedChannel) {
-                this._silentRenewFinishedChannel = new broadcastChannel.BroadcastChannel(this._prefix + "_silent_renew_finished");
-            }
-            this._silentRenewFinishedChannel.postMessage("Silent renew finished by _currentRandomId " + this._currentRandomId);
+            this._silentRenewFinishedChannel = new broadcastChannel.BroadcastChannel(this._prefix + "_silent_renew_finished");
+            this._silentRenewFinishedChannel.onmessage = function () {
+                _this.loggerService.logDebug("FROM SILENT RENEW FINISHED RECIVED EVENT > prefix: " + _this._prefix + " > currentRandomId: " + _this._currentRandomId);
+                _this._silentRenewFinished$.next(true);
+                _this.publicEventsService.fireEvent(exports.EventTypes.SilentRenewFinished, true);
+            };
         };
         return TabsSynchronizationService;
     }());
-    TabsSynchronizationService.ɵfac = function TabsSynchronizationService_Factory(t) { return new (t || TabsSynchronizationService)(i0.ɵɵinject(ConfigurationProvider)); };
+    TabsSynchronizationService.ɵfac = function TabsSynchronizationService_Factory(t) { return new (t || TabsSynchronizationService)(i0.ɵɵinject(ConfigurationProvider), i0.ɵɵinject(PublicEventsService), i0.ɵɵinject(LoggerService)); };
     TabsSynchronizationService.ɵprov = i0.ɵɵdefineInjectable({ token: TabsSynchronizationService, factory: TabsSynchronizationService.ɵfac });
     /*@__PURE__*/ (function () {
         i0.ɵsetClassMetadata(TabsSynchronizationService, [{
                 type: i0.Injectable
-            }], function () { return [{ type: ConfigurationProvider }]; }, null);
+            }], function () { return [{ type: ConfigurationProvider }, { type: PublicEventsService }, { type: LoggerService }]; }, null);
     })();
 
     var IFRAME_FOR_SILENT_RENEW_IDENTIFIER = 'myiFrameForSilentRenew';
     var SilentRenewService = /** @class */ (function () {
-        function SilentRenewService(configurationProvider, iFrameService, flowsService, flowsDataService, authStateService, loggerService, flowHelper, implicitFlowCallbackService, intervallService, tabsSynchronizationService, publicEventsService) {
+        function SilentRenewService(configurationProvider, iFrameService, flowsService, flowsDataService, authStateService, loggerService, flowHelper, implicitFlowCallbackService, intervallService, tabsSynchronizationService) {
             this.configurationProvider = configurationProvider;
             this.iFrameService = iFrameService;
             this.flowsService = flowsService;
@@ -2971,7 +2981,6 @@
             this.implicitFlowCallbackService = implicitFlowCallbackService;
             this.intervallService = intervallService;
             this.tabsSynchronizationService = tabsSynchronizationService;
-            this.publicEventsService = publicEventsService;
             this.refreshSessionWithIFrameCompletedInternal$ = new rxjs.Subject();
         }
         Object.defineProperty(SilentRenewService.prototype, "refreshSessionWithIFrameCompleted$", {
@@ -3057,7 +3066,7 @@
                 callback$.subscribe(function (callbackContext) {
                     _this.refreshSessionWithIFrameCompletedInternal$.next(callbackContext);
                     _this.flowsDataService.resetSilentRenewRunning();
-                    _this.publicEventsService.fireEvent(exports.EventTypes.CheckSessionReceived);
+                    _this.tabsSynchronizationService.sendSilentRenewFinishedNotification();
                 }, function (err) {
                     _this.loggerService.logError('Error: ' + err);
                     _this.refreshSessionWithIFrameCompletedInternal$.next(null);
@@ -3070,12 +3079,12 @@
         };
         return SilentRenewService;
     }());
-    SilentRenewService.ɵfac = function SilentRenewService_Factory(t) { return new (t || SilentRenewService)(i0.ɵɵinject(ConfigurationProvider), i0.ɵɵinject(IFrameService), i0.ɵɵinject(FlowsService), i0.ɵɵinject(FlowsDataService), i0.ɵɵinject(AuthStateService), i0.ɵɵinject(LoggerService), i0.ɵɵinject(FlowHelper), i0.ɵɵinject(ImplicitFlowCallbackService), i0.ɵɵinject(IntervallService), i0.ɵɵinject(TabsSynchronizationService), i0.ɵɵinject(PublicEventsService)); };
+    SilentRenewService.ɵfac = function SilentRenewService_Factory(t) { return new (t || SilentRenewService)(i0.ɵɵinject(ConfigurationProvider), i0.ɵɵinject(IFrameService), i0.ɵɵinject(FlowsService), i0.ɵɵinject(FlowsDataService), i0.ɵɵinject(AuthStateService), i0.ɵɵinject(LoggerService), i0.ɵɵinject(FlowHelper), i0.ɵɵinject(ImplicitFlowCallbackService), i0.ɵɵinject(IntervallService), i0.ɵɵinject(TabsSynchronizationService)); };
     SilentRenewService.ɵprov = i0.ɵɵdefineInjectable({ token: SilentRenewService, factory: SilentRenewService.ɵfac });
     /*@__PURE__*/ (function () {
         i0.ɵsetClassMetadata(SilentRenewService, [{
                 type: i0.Injectable
-            }], function () { return [{ type: ConfigurationProvider }, { type: IFrameService }, { type: FlowsService }, { type: FlowsDataService }, { type: AuthStateService }, { type: LoggerService }, { type: FlowHelper }, { type: ImplicitFlowCallbackService }, { type: IntervallService }, { type: TabsSynchronizationService }, { type: PublicEventsService }]; }, null);
+            }], function () { return [{ type: ConfigurationProvider }, { type: IFrameService }, { type: FlowsService }, { type: FlowsDataService }, { type: AuthStateService }, { type: LoggerService }, { type: FlowHelper }, { type: ImplicitFlowCallbackService }, { type: IntervallService }, { type: TabsSynchronizationService }]; }, null);
     })();
 
     var CodeFlowCallbackService = /** @class */ (function () {
@@ -3308,7 +3317,7 @@
 
     var MAX_RETRY_ATTEMPTS = 3;
     var RefreshSessionService = /** @class */ (function () {
-        function RefreshSessionService(flowHelper, configurationProvider, flowsDataService, loggerService, silentRenewService, authStateService, authWellKnownService, refreshSessionIframeService, refreshSessionRefreshTokenService) {
+        function RefreshSessionService(flowHelper, configurationProvider, flowsDataService, loggerService, silentRenewService, authStateService, authWellKnownService, refreshSessionIframeService, refreshSessionRefreshTokenService, tabsSynchronizationService) {
             this.flowHelper = flowHelper;
             this.configurationProvider = configurationProvider;
             this.flowsDataService = flowsDataService;
@@ -3318,6 +3327,7 @@
             this.authWellKnownService = authWellKnownService;
             this.refreshSessionIframeService = refreshSessionIframeService;
             this.refreshSessionRefreshTokenService = refreshSessionRefreshTokenService;
+            this.tabsSynchronizationService = tabsSynchronizationService;
         }
         RefreshSessionService.prototype.forceRefreshSession = function (customParams) {
             var _this = this;
@@ -3333,20 +3343,56 @@
                     return null;
                 }));
             }
-            return rxjs.forkJoin([
-                this.startRefreshSession(customParams),
-                this.silentRenewService.refreshSessionWithIFrameCompleted$.pipe(operators.take(1)),
-            ]).pipe(operators.timeout(this.configurationProvider.openIDConfiguration.silentRenewTimeoutInSeconds * 1000), operators.retryWhen(this.timeoutRetryStrategy.bind(this)), operators.map(function (_c) {
-                var _d = __read(_c, 2), _ = _d[0], callbackContext = _d[1];
-                var _a, _b;
-                var isAuthenticated = _this.authStateService.areAuthStorageTokensValid();
-                if (isAuthenticated) {
-                    return {
-                        idToken: (_a = callbackContext === null || callbackContext === void 0 ? void 0 : callbackContext.authResult) === null || _a === void 0 ? void 0 : _a.id_token,
-                        accessToken: (_b = callbackContext === null || callbackContext === void 0 ? void 0 : callbackContext.authResult) === null || _b === void 0 ? void 0 : _b.access_token,
-                    };
+            return this.silentRenewCase();
+        };
+        RefreshSessionService.prototype.silentRenewCase = function (customParams) {
+            var _this = this;
+            return rxjs.from(this.tabsSynchronizationService.isLeaderCheck()).pipe(operators.take(1), operators.switchMap(function (isLeader) {
+                if (isLeader) {
+                    _this.loggerService.logDebug("forceRefreshSession WE ARE LEADER");
+                    return rxjs.forkJoin([
+                        _this.startRefreshSession(customParams),
+                        _this.silentRenewService.refreshSessionWithIFrameCompleted$.pipe(operators.take(1)),
+                    ]).pipe(operators.timeout(_this.configurationProvider.openIDConfiguration.silentRenewTimeoutInSeconds * 1000), operators.map(function (_c) {
+                        var _d = __read(_c, 2), _ = _d[0], callbackContext = _d[1];
+                        var _a, _b;
+                        var isAuthenticated = _this.authStateService.areAuthStorageTokensValid();
+                        if (isAuthenticated) {
+                            return {
+                                idToken: (_a = callbackContext === null || callbackContext === void 0 ? void 0 : callbackContext.authResult) === null || _a === void 0 ? void 0 : _a.id_token,
+                                accessToken: (_b = callbackContext === null || callbackContext === void 0 ? void 0 : callbackContext.authResult) === null || _b === void 0 ? void 0 : _b.access_token,
+                            };
+                        }
+                        return null;
+                    }), operators.catchError(function (error) {
+                        if (error instanceof rxjs.TimeoutError) {
+                            _this.loggerService.logWarning("forceRefreshSession WE ARE LEADER > occured TIMEOUT ERROR SO WE RETRY: this.forceRefreshSession(customParams)");
+                            return _this.silentRenewCase(customParams);
+                        }
+                        throw error;
+                    }));
                 }
-                return null;
+                else {
+                    _this.loggerService.logDebug("forceRefreshSession WE ARE NOT NOT NOT LEADER");
+                    return _this.tabsSynchronizationService.getSilentRenewFinishedObservable().pipe(operators.take(1), operators.timeout(_this.configurationProvider.openIDConfiguration.silentRenewTimeoutInSeconds * 1000), operators.catchError(function (error) {
+                        if (error instanceof rxjs.TimeoutError) {
+                            _this.loggerService.logWarning("forceRefreshSession WE ARE NOT NOT NOT LEADER > occured TIMEOUT ERROR SO WE RETRY: this.forceRefreshSession(customParams)");
+                            return _this.silentRenewCase(customParams);
+                        }
+                        throw error;
+                    }), operators.map(function () {
+                        var isAuthenticated = _this.authStateService.areAuthStorageTokensValid();
+                        _this.loggerService.logDebug("forceRefreshSession WE ARE NOT NOT NOT LEADER > getSilentRenewFinishedObservable EMMITS VALUE > isAuthenticated = " + isAuthenticated);
+                        if (isAuthenticated) {
+                            return {
+                                idToken: _this.authStateService.getIdToken(),
+                                accessToken: _this.authStateService.getAccessToken(),
+                            };
+                        }
+                        _this.loggerService.logError("forceRefreshSession WE ARE NOT NOT NOT LEADER > getSilentRenewFinishedObservable EMMITS VALUE > isAuthenticated FALSE WE DONT KNOW WAHT TO DO WITH THIS");
+                        return null;
+                    }));
+                }
             }));
         };
         RefreshSessionService.prototype.startRefreshSession = function (customParams) {
@@ -3372,32 +3418,19 @@
                 return _this.refreshSessionIframeService.refreshSessionWithIframe(customParams);
             }));
         };
-        RefreshSessionService.prototype.timeoutRetryStrategy = function (errorAttempts) {
-            var _this = this;
-            return errorAttempts.pipe(operators.mergeMap(function (error, index) {
-                var scalingDuration = 1000;
-                var currentAttempt = index + 1;
-                if (!(error instanceof rxjs.TimeoutError) || currentAttempt > MAX_RETRY_ATTEMPTS) {
-                    return rxjs.throwError(error);
-                }
-                _this.loggerService.logDebug("forceRefreshSession timeout. Attempt #" + currentAttempt);
-                _this.flowsDataService.resetSilentRenewRunning();
-                return rxjs.timer(currentAttempt * scalingDuration);
-            }));
-        };
         return RefreshSessionService;
     }());
-    RefreshSessionService.ɵfac = function RefreshSessionService_Factory(t) { return new (t || RefreshSessionService)(i0.ɵɵinject(FlowHelper), i0.ɵɵinject(ConfigurationProvider), i0.ɵɵinject(FlowsDataService), i0.ɵɵinject(LoggerService), i0.ɵɵinject(SilentRenewService), i0.ɵɵinject(AuthStateService), i0.ɵɵinject(AuthWellKnownService), i0.ɵɵinject(RefreshSessionIframeService), i0.ɵɵinject(RefreshSessionRefreshTokenService)); };
+    RefreshSessionService.ɵfac = function RefreshSessionService_Factory(t) { return new (t || RefreshSessionService)(i0.ɵɵinject(FlowHelper), i0.ɵɵinject(ConfigurationProvider), i0.ɵɵinject(FlowsDataService), i0.ɵɵinject(LoggerService), i0.ɵɵinject(SilentRenewService), i0.ɵɵinject(AuthStateService), i0.ɵɵinject(AuthWellKnownService), i0.ɵɵinject(RefreshSessionIframeService), i0.ɵɵinject(RefreshSessionRefreshTokenService), i0.ɵɵinject(TabsSynchronizationService)); };
     RefreshSessionService.ɵprov = i0.ɵɵdefineInjectable({ token: RefreshSessionService, factory: RefreshSessionService.ɵfac, providedIn: 'root' });
     /*@__PURE__*/ (function () {
         i0.ɵsetClassMetadata(RefreshSessionService, [{
                 type: i0.Injectable,
                 args: [{ providedIn: 'root' }]
-            }], function () { return [{ type: FlowHelper }, { type: ConfigurationProvider }, { type: FlowsDataService }, { type: LoggerService }, { type: SilentRenewService }, { type: AuthStateService }, { type: AuthWellKnownService }, { type: RefreshSessionIframeService }, { type: RefreshSessionRefreshTokenService }]; }, null);
+            }], function () { return [{ type: FlowHelper }, { type: ConfigurationProvider }, { type: FlowsDataService }, { type: LoggerService }, { type: SilentRenewService }, { type: AuthStateService }, { type: AuthWellKnownService }, { type: RefreshSessionIframeService }, { type: RefreshSessionRefreshTokenService }, { type: TabsSynchronizationService }]; }, null);
     })();
 
     var PeriodicallyTokenCheckService = /** @class */ (function () {
-        function PeriodicallyTokenCheckService(flowsService, flowHelper, configurationProvider, flowsDataService, loggerService, userService, authStateService, refreshSessionIframeService, refreshSessionRefreshTokenService, intervalService, storagePersistanceService, tabsSynchronizationService, publicEventsService) {
+        function PeriodicallyTokenCheckService(flowsService, flowHelper, configurationProvider, flowsDataService, loggerService, userService, authStateService, refreshSessionIframeService, refreshSessionRefreshTokenService, intervalService, storagePersistanceService, tabsSynchronizationService) {
             this.flowsService = flowsService;
             this.flowHelper = flowHelper;
             this.configurationProvider = configurationProvider;
@@ -3410,7 +3443,6 @@
             this.intervalService = intervalService;
             this.storagePersistanceService = storagePersistanceService;
             this.tabsSynchronizationService = tabsSynchronizationService;
-            this.publicEventsService = publicEventsService;
         }
         PeriodicallyTokenCheckService.prototype.startTokenValidationPeriodically = function (repeatAfterSeconds) {
             var _this = this;
@@ -3418,10 +3450,6 @@
                 return;
             }
             this.loggerService.logDebug("starting token validation check every " + repeatAfterSeconds + "s");
-            this.tabsSynchronizationService.addHandlerOnSilentRenewFinishedChannel(function (message) {
-                _this.loggerService.logDebug('FROM addHandlerOnSilentRenewFinishedChannel message:', message);
-                _this.publicEventsService.fireEvent(exports.EventTypes.SilentRenewFinished);
-            });
             var periodicallyCheck$ = this.intervalService.startPeriodicTokenCheck(repeatAfterSeconds).pipe(operators.switchMap(function () {
                 var idToken = _this.authStateService.getIdToken();
                 var isSilentRenewRunning = _this.flowsDataService.isSilentRenewRunning();
@@ -3441,7 +3469,7 @@
                     return rxjs.of(null);
                 }
                 _this.loggerService.logDebug('starting silent renew...');
-                return rxjs.from(_this.tabsSynchronizationService.isLeaderCheck()).pipe(operators.switchMap(function (isLeader) {
+                return rxjs.from(_this.tabsSynchronizationService.isLeaderCheck()).pipe(operators.take(1), operators.switchMap(function (isLeader) {
                     if (isLeader && !_this.flowsDataService.isSilentRenewRunning()) {
                         _this.flowsDataService.setSilentRenewRunning();
                         // Retrieve Dynamically Set Custom Params
@@ -3471,13 +3499,13 @@
         };
         return PeriodicallyTokenCheckService;
     }());
-    PeriodicallyTokenCheckService.ɵfac = function PeriodicallyTokenCheckService_Factory(t) { return new (t || PeriodicallyTokenCheckService)(i0.ɵɵinject(FlowsService), i0.ɵɵinject(FlowHelper), i0.ɵɵinject(ConfigurationProvider), i0.ɵɵinject(FlowsDataService), i0.ɵɵinject(LoggerService), i0.ɵɵinject(UserService), i0.ɵɵinject(AuthStateService), i0.ɵɵinject(RefreshSessionIframeService), i0.ɵɵinject(RefreshSessionRefreshTokenService), i0.ɵɵinject(IntervallService), i0.ɵɵinject(StoragePersistanceService), i0.ɵɵinject(TabsSynchronizationService), i0.ɵɵinject(PublicEventsService)); };
+    PeriodicallyTokenCheckService.ɵfac = function PeriodicallyTokenCheckService_Factory(t) { return new (t || PeriodicallyTokenCheckService)(i0.ɵɵinject(FlowsService), i0.ɵɵinject(FlowHelper), i0.ɵɵinject(ConfigurationProvider), i0.ɵɵinject(FlowsDataService), i0.ɵɵinject(LoggerService), i0.ɵɵinject(UserService), i0.ɵɵinject(AuthStateService), i0.ɵɵinject(RefreshSessionIframeService), i0.ɵɵinject(RefreshSessionRefreshTokenService), i0.ɵɵinject(IntervallService), i0.ɵɵinject(StoragePersistanceService), i0.ɵɵinject(TabsSynchronizationService)); };
     PeriodicallyTokenCheckService.ɵprov = i0.ɵɵdefineInjectable({ token: PeriodicallyTokenCheckService, factory: PeriodicallyTokenCheckService.ɵfac, providedIn: 'root' });
     /*@__PURE__*/ (function () {
         i0.ɵsetClassMetadata(PeriodicallyTokenCheckService, [{
                 type: i0.Injectable,
                 args: [{ providedIn: 'root' }]
-            }], function () { return [{ type: FlowsService }, { type: FlowHelper }, { type: ConfigurationProvider }, { type: FlowsDataService }, { type: LoggerService }, { type: UserService }, { type: AuthStateService }, { type: RefreshSessionIframeService }, { type: RefreshSessionRefreshTokenService }, { type: IntervallService }, { type: StoragePersistanceService }, { type: TabsSynchronizationService }, { type: PublicEventsService }]; }, null);
+            }], function () { return [{ type: FlowsService }, { type: FlowHelper }, { type: ConfigurationProvider }, { type: FlowsDataService }, { type: LoggerService }, { type: UserService }, { type: AuthStateService }, { type: RefreshSessionIframeService }, { type: RefreshSessionRefreshTokenService }, { type: IntervallService }, { type: StoragePersistanceService }, { type: TabsSynchronizationService }]; }, null);
     })();
 
     var PopUpService = /** @class */ (function () {

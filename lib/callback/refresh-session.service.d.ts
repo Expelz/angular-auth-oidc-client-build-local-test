@@ -7,6 +7,7 @@ import { RefreshSessionIframeService } from '../iframe/refresh-session-iframe.se
 import { SilentRenewService } from '../iframe/silent-renew.service';
 import { LoggerService } from '../logging/logger.service';
 import { FlowHelper } from '../utils/flowHelper/flow-helper.service';
+import { TabsSynchronizationService } from './../iframe/tabs-synchronization.service';
 import { RefreshSessionRefreshTokenService } from './refresh-session-refresh-token.service';
 import * as i0 from "@angular/core";
 export declare const MAX_RETRY_ATTEMPTS = 3;
@@ -20,15 +21,16 @@ export declare class RefreshSessionService {
     private authWellKnownService;
     private refreshSessionIframeService;
     private refreshSessionRefreshTokenService;
-    constructor(flowHelper: FlowHelper, configurationProvider: ConfigurationProvider, flowsDataService: FlowsDataService, loggerService: LoggerService, silentRenewService: SilentRenewService, authStateService: AuthStateService, authWellKnownService: AuthWellKnownService, refreshSessionIframeService: RefreshSessionIframeService, refreshSessionRefreshTokenService: RefreshSessionRefreshTokenService);
+    private tabsSynchronizationService;
+    constructor(flowHelper: FlowHelper, configurationProvider: ConfigurationProvider, flowsDataService: FlowsDataService, loggerService: LoggerService, silentRenewService: SilentRenewService, authStateService: AuthStateService, authWellKnownService: AuthWellKnownService, refreshSessionIframeService: RefreshSessionIframeService, refreshSessionRefreshTokenService: RefreshSessionRefreshTokenService, tabsSynchronizationService: TabsSynchronizationService);
     forceRefreshSession(customParams?: {
         [key: string]: string | number | boolean;
     }): Observable<{
-        idToken: string;
-        accessToken: string;
+        idToken: any;
+        accessToken: any;
     }>;
+    private silentRenewCase;
     private startRefreshSession;
-    private timeoutRetryStrategy;
     static ɵfac: i0.ɵɵFactoryDef<RefreshSessionService, never>;
     static ɵprov: i0.ɵɵInjectableDef<RefreshSessionService>;
 }

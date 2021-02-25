@@ -50,8 +50,8 @@ export declare class OidcSecurityService {
     forceRefreshSession(customParams?: {
         [key: string]: string | number | boolean;
     }): Observable<{
-        idToken: string;
-        accessToken: string;
+        idToken: any;
+        accessToken: any;
     }>;
     logoffAndRevokeTokens(urlHandler?: (url: string) => any): Observable<any>;
     logoff(urlHandler?: (url: string) => any): void;
