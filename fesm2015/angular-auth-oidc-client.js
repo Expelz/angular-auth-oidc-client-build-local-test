@@ -1267,7 +1267,7 @@ class FlowsDataService {
             state: state,
             dateOfLaunchedProcessUtc: new Date().toISOString(),
         };
-        this.storagePersistanceService.write('authStateControl', storageObject);
+        this.storagePersistanceService.write('authStateControl', JSON.stringify(storageObject));
         return state;
     }
     setSessionState(sessionState) {
