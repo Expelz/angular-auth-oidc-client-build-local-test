@@ -2909,16 +2909,18 @@
         }
         TabsSynchronizationService.prototype.isLeaderCheck = function () {
             var _this = this;
+            this.loggerService.logDebug("isLeaderCheck > prefix: " + this._prefix + " > currentRandomId: " + this._currentRandomId);
+            if (!this._isLeaderSubjectInitialized) {
+                this.loggerService.logDebug("isLeaderCheck > IS LEADER IS NOT INITIALIZED > prefix: " + this._prefix + " > currentRandomId: " + this._currentRandomId);
+                return this._leaderSubjectInitialized$
+                    .asObservable()
+                    .pipe(operators.take(1), operators.switchMap(function () {
+                    return rxjs.of(_this._elector.isLeader);
+                }))
+                    .toPromise();
+            }
+            this.loggerService.logDebug("isLeaderCheck > IS LEADER IS ALREADY INITIALIZED SUCCESSFULLY> prefix: " + this._prefix + " > currentRandomId: " + this._currentRandomId);
             return new Promise(function (resolve) {
-                _this.loggerService.logDebug("isLeaderCheck > prefix: " + _this._prefix + " > currentRandomId: " + _this._currentRandomId);
-                if (!_this._isLeaderSubjectInitialized) {
-                    return _this._leaderSubjectInitialized$
-                        .asObservable()
-                        .pipe(operators.take(1), operators.switchMap(function () {
-                        return rxjs.of(_this._elector.isLeader);
-                    }))
-                        .toPromise();
-                }
                 setTimeout(function () {
                     var isLeader = _this._elector.isLeader;
                     _this.loggerService.logWarning("isLeaderCheck > prefix: " + _this._prefix + " > currentRandomId: " + _this._currentRandomId + " > inside setTimeout isLeader = " + isLeader);

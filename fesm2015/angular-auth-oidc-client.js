@@ -2425,16 +2425,18 @@ class TabsSynchronizationService {
         this.Initialization();
     }
     isLeaderCheck() {
+        this.loggerService.logDebug(`isLeaderCheck > prefix: ${this._prefix} > currentRandomId: ${this._currentRandomId}`);
+        if (!this._isLeaderSubjectInitialized) {
+            this.loggerService.logDebug(`isLeaderCheck > IS LEADER IS NOT INITIALIZED > prefix: ${this._prefix} > currentRandomId: ${this._currentRandomId}`);
+            return this._leaderSubjectInitialized$
+                .asObservable()
+                .pipe(take(1), switchMap(() => {
+                return of(this._elector.isLeader);
+            }))
+                .toPromise();
+        }
+        this.loggerService.logDebug(`isLeaderCheck > IS LEADER IS ALREADY INITIALIZED SUCCESSFULLY> prefix: ${this._prefix} > currentRandomId: ${this._currentRandomId}`);
         return new Promise((resolve) => {
-            this.loggerService.logDebug(`isLeaderCheck > prefix: ${this._prefix} > currentRandomId: ${this._currentRandomId}`);
-            if (!this._isLeaderSubjectInitialized) {
-                return this._leaderSubjectInitialized$
-                    .asObservable()
-                    .pipe(take(1), switchMap(() => {
-                    return of(this._elector.isLeader);
-                }))
-                    .toPromise();
-            }
             setTimeout(() => {
                 const isLeader = this._elector.isLeader;
                 this.loggerService.logWarning(`isLeaderCheck > prefix: ${this._prefix} > currentRandomId: ${this._currentRandomId} > inside setTimeout isLeader = ${isLeader}`);
