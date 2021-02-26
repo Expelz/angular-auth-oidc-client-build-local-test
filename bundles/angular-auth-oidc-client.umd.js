@@ -1644,22 +1644,42 @@
             this.storagePersistanceService.write('authNonce', nonce);
         };
         FlowsDataService.prototype.getAuthStateControl = function () {
-            return this.storagePersistanceService.read('authStateControl');
+            var json = this.storagePersistanceService.read('authStateControl');
+            var storageObject = !!json ? JSON.parse(json) : null;
+            this.loggerService.logDebug("getAuthStateControl > currentTime: " + new Date().toTimeString());
+            if (storageObject) {
+                var dateOfLaunchedProcessUtc = Date.parse(storageObject.dateOfLaunchedProcessUtc);
+                var currentDateUtc = Date.parse(new Date().toISOString());
+                var elapsedTimeInMilliseconds = Math.abs(currentDateUtc - dateOfLaunchedProcessUtc);
+                var isProbablyStuck = elapsedTimeInMilliseconds > this.configurationProvider.openIDConfiguration.silentRenewTimeoutInSeconds * 1000;
+                if (isProbablyStuck) {
+                    this.loggerService.logWarning('getAuthStateControl -> silent renew process is probably stuck, AuthState will be reset.');
+                    this.storagePersistanceService.write('authStateControl', '');
+                    return false;
+                }
+                this.loggerService.logDebug("getAuthStateControl > STATE SUCCESSFULLY RETURNED " + storageObject.state + " > currentTime: " + new Date().toTimeString());
+                return storageObject.state;
+            }
+            this.loggerService.logWarning("getAuthStateControl > storageObject IS NULL RETURN FALSE > currentTime: " + new Date().toTimeString());
+            return false;
         };
         FlowsDataService.prototype.setAuthStateControl = function (authStateControl) {
             this.storagePersistanceService.write('authStateControl', authStateControl);
         };
         FlowsDataService.prototype.getExistingOrCreateAuthStateControl = function () {
-            var state = this.storagePersistanceService.read('authStateControl');
+            var state = this.getAuthStateControl();
             if (!state) {
-                state = this.randomService.createRandom(40);
-                this.storagePersistanceService.write('authStateControl', state);
+                state = this.createAuthStateControl();
             }
             return state;
         };
         FlowsDataService.prototype.createAuthStateControl = function () {
             var state = this.randomService.createRandom(40);
-            this.storagePersistanceService.write('authStateControl', state);
+            var storageObject = {
+                state: state,
+                dateOfLaunchedProcessUtc: new Date().toISOString(),
+            };
+            this.storagePersistanceService.write('authStateControl', storageObject);
             return state;
         };
         FlowsDataService.prototype.setSessionState = function (sessionState) {

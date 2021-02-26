@@ -1232,22 +1232,42 @@ class FlowsDataService {
         this.storagePersistanceService.write('authNonce', nonce);
     }
     getAuthStateControl() {
-        return this.storagePersistanceService.read('authStateControl');
+        const json = this.storagePersistanceService.read('authStateControl');
+        const storageObject = !!json ? JSON.parse(json) : null;
+        this.loggerService.logDebug(`getAuthStateControl > currentTime: ${new Date().toTimeString()}`);
+        if (storageObject) {
+            const dateOfLaunchedProcessUtc = Date.parse(storageObject.dateOfLaunchedProcessUtc);
+            const currentDateUtc = Date.parse(new Date().toISOString());
+            const elapsedTimeInMilliseconds = Math.abs(currentDateUtc - dateOfLaunchedProcessUtc);
+            const isProbablyStuck = elapsedTimeInMilliseconds > this.configurationProvider.openIDConfiguration.silentRenewTimeoutInSeconds * 1000;
+            if (isProbablyStuck) {
+                this.loggerService.logWarning('getAuthStateControl -> silent renew process is probably stuck, AuthState will be reset.');
+                this.storagePersistanceService.write('authStateControl', '');
+                return false;
+            }
+            this.loggerService.logDebug(`getAuthStateControl > STATE SUCCESSFULLY RETURNED ${storageObject.state} > currentTime: ${new Date().toTimeString()}`);
+            return storageObject.state;
+        }
+        this.loggerService.logWarning(`getAuthStateControl > storageObject IS NULL RETURN FALSE > currentTime: ${new Date().toTimeString()}`);
+        return false;
     }
     setAuthStateControl(authStateControl) {
         this.storagePersistanceService.write('authStateControl', authStateControl);
     }
     getExistingOrCreateAuthStateControl() {
-        let state = this.storagePersistanceService.read('authStateControl');
+        let state = this.getAuthStateControl();
         if (!state) {
-            state = this.randomService.createRandom(40);
-            this.storagePersistanceService.write('authStateControl', state);
+            state = this.createAuthStateControl();
         }
         return state;
     }
     createAuthStateControl() {
         const state = this.randomService.createRandom(40);
-        this.storagePersistanceService.write('authStateControl', state);
+        const storageObject = {
+            state: state,
+            dateOfLaunchedProcessUtc: new Date().toISOString(),
+        };
+        this.storagePersistanceService.write('authStateControl', storageObject);
         return state;
     }
     setSessionState(sessionState) {
