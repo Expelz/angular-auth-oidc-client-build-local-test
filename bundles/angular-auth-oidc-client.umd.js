@@ -2343,7 +2343,7 @@
     })();
 
     var StateValidationService = /** @class */ (function () {
-        function StateValidationService(storagePersistanceService, tokenValidationService, tokenHelperService, loggerService, configurationProvider, equalityService, flowHelper) {
+        function StateValidationService(storagePersistanceService, tokenValidationService, tokenHelperService, loggerService, configurationProvider, equalityService, flowHelper, flowsDataService) {
             this.storagePersistanceService = storagePersistanceService;
             this.tokenValidationService = tokenValidationService;
             this.tokenHelperService = tokenHelperService;
@@ -2351,6 +2351,7 @@
             this.configurationProvider = configurationProvider;
             this.equalityService = equalityService;
             this.flowHelper = flowHelper;
+            this.flowsDataService = flowsDataService;
         }
         StateValidationService.prototype.getValidatedStateResult = function (callbackContext) {
             if (callbackContext === null || callbackContext === void 0 ? void 0 : callbackContext.authResult.error) {
@@ -2360,7 +2361,7 @@
         };
         StateValidationService.prototype.validateState = function (callbackContext) {
             var toReturn = new StateValidationResult();
-            var authStateControl = this.storagePersistanceService.read('authStateControl');
+            var authStateControl = this.flowsDataService.getAuthStateControl();
             if (!this.tokenValidationService.validateStateFromHashCallback(callbackContext.authResult.state, authStateControl)) {
                 this.loggerService.logWarning('authorizedCallback incorrect state');
                 toReturn.state = exports.ValidationResult.StatesDoNotMatch;
@@ -2540,12 +2541,12 @@
         };
         return StateValidationService;
     }());
-    StateValidationService.ɵfac = function StateValidationService_Factory(t) { return new (t || StateValidationService)(i0.ɵɵinject(StoragePersistanceService), i0.ɵɵinject(TokenValidationService), i0.ɵɵinject(TokenHelperService), i0.ɵɵinject(LoggerService), i0.ɵɵinject(ConfigurationProvider), i0.ɵɵinject(EqualityService), i0.ɵɵinject(FlowHelper)); };
+    StateValidationService.ɵfac = function StateValidationService_Factory(t) { return new (t || StateValidationService)(i0.ɵɵinject(StoragePersistanceService), i0.ɵɵinject(TokenValidationService), i0.ɵɵinject(TokenHelperService), i0.ɵɵinject(LoggerService), i0.ɵɵinject(ConfigurationProvider), i0.ɵɵinject(EqualityService), i0.ɵɵinject(FlowHelper), i0.ɵɵinject(FlowsDataService)); };
     StateValidationService.ɵprov = i0.ɵɵdefineInjectable({ token: StateValidationService, factory: StateValidationService.ɵfac });
     /*@__PURE__*/ (function () {
         i0.ɵsetClassMetadata(StateValidationService, [{
                 type: i0.Injectable
-            }], function () { return [{ type: StoragePersistanceService }, { type: TokenValidationService }, { type: TokenHelperService }, { type: LoggerService }, { type: ConfigurationProvider }, { type: EqualityService }, { type: FlowHelper }]; }, null);
+            }], function () { return [{ type: StoragePersistanceService }, { type: TokenValidationService }, { type: TokenHelperService }, { type: LoggerService }, { type: ConfigurationProvider }, { type: EqualityService }, { type: FlowHelper }, { type: FlowsDataService }]; }, null);
     })();
 
     var FlowsService = /** @class */ (function () {

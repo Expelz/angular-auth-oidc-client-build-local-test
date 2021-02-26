@@ -1882,7 +1882,7 @@ EqualityService.ɵprov = ɵɵdefineInjectable({ token: EqualityService, factory:
     }], null, null); })();
 
 class StateValidationService {
-    constructor(storagePersistanceService, tokenValidationService, tokenHelperService, loggerService, configurationProvider, equalityService, flowHelper) {
+    constructor(storagePersistanceService, tokenValidationService, tokenHelperService, loggerService, configurationProvider, equalityService, flowHelper, flowsDataService) {
         this.storagePersistanceService = storagePersistanceService;
         this.tokenValidationService = tokenValidationService;
         this.tokenHelperService = tokenHelperService;
@@ -1890,6 +1890,7 @@ class StateValidationService {
         this.configurationProvider = configurationProvider;
         this.equalityService = equalityService;
         this.flowHelper = flowHelper;
+        this.flowsDataService = flowsDataService;
     }
     getValidatedStateResult(callbackContext) {
         if (callbackContext === null || callbackContext === void 0 ? void 0 : callbackContext.authResult.error) {
@@ -1899,7 +1900,7 @@ class StateValidationService {
     }
     validateState(callbackContext) {
         const toReturn = new StateValidationResult();
-        const authStateControl = this.storagePersistanceService.read('authStateControl');
+        const authStateControl = this.flowsDataService.getAuthStateControl();
         if (!this.tokenValidationService.validateStateFromHashCallback(callbackContext.authResult.state, authStateControl)) {
             this.loggerService.logWarning('authorizedCallback incorrect state');
             toReturn.state = ValidationResult.StatesDoNotMatch;
@@ -2078,11 +2079,11 @@ class StateValidationService {
         this.loggerService.logDebug('AuthorizedCallback token(s) invalid');
     }
 }
-StateValidationService.ɵfac = function StateValidationService_Factory(t) { return new (t || StateValidationService)(ɵɵinject(StoragePersistanceService), ɵɵinject(TokenValidationService), ɵɵinject(TokenHelperService), ɵɵinject(LoggerService), ɵɵinject(ConfigurationProvider), ɵɵinject(EqualityService), ɵɵinject(FlowHelper)); };
+StateValidationService.ɵfac = function StateValidationService_Factory(t) { return new (t || StateValidationService)(ɵɵinject(StoragePersistanceService), ɵɵinject(TokenValidationService), ɵɵinject(TokenHelperService), ɵɵinject(LoggerService), ɵɵinject(ConfigurationProvider), ɵɵinject(EqualityService), ɵɵinject(FlowHelper), ɵɵinject(FlowsDataService)); };
 StateValidationService.ɵprov = ɵɵdefineInjectable({ token: StateValidationService, factory: StateValidationService.ɵfac });
 /*@__PURE__*/ (function () { ɵsetClassMetadata(StateValidationService, [{
         type: Injectable
-    }], function () { return [{ type: StoragePersistanceService }, { type: TokenValidationService }, { type: TokenHelperService }, { type: LoggerService }, { type: ConfigurationProvider }, { type: EqualityService }, { type: FlowHelper }]; }, null); })();
+    }], function () { return [{ type: StoragePersistanceService }, { type: TokenValidationService }, { type: TokenHelperService }, { type: LoggerService }, { type: ConfigurationProvider }, { type: EqualityService }, { type: FlowHelper }, { type: FlowsDataService }]; }, null); })();
 
 class FlowsService {
     constructor(urlService, loggerService, tokenValidationService, configurationProvider, authStateService, flowsDataService, signinKeyDataService, dataService, userService, stateValidationService, storagePersistanceService) {
