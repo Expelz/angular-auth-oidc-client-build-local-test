@@ -11,6 +11,7 @@ export declare class TabsSynchronizationService {
     private _elector;
     private _silentRenewFinishedChannel;
     private _silentRenewFinished$;
+    private _leaderSubjectInitialized$;
     private _currentRandomId;
     private _prefix;
     constructor(configurationProvider: ConfigurationProvider, publicEventsService: PublicEventsService, loggerService: LoggerService);
