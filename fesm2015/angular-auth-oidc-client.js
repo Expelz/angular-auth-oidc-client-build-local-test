@@ -2483,12 +2483,18 @@ class TabsSynchronizationService {
             fallbackInterval: 2000,
             responseTime: 1000,
         });
-        this._elector.awaitLeadership().then(() => {
-            if (!this._isLeaderSubjectInitialized) {
-                this._isLeaderSubjectInitialized = true;
-                this._leaderSubjectInitialized$.next(true);
+        this._elector.applyOnce().then((isLeader) => {
+            this.loggerService.logDebug('FIRST applyOnce finished...');
+            this._isLeaderSubjectInitialized = true;
+            this._leaderSubjectInitialized$.next(true);
+            if (!isLeader) {
+                this._elector.awaitLeadership().then(() => {
+                    this.loggerService.logDebug(`FROM awaitLeadership > this tab is now leader > prefix: ${this._prefix} > currentRandomId: ${this._currentRandomId}`);
+                });
             }
-            this.loggerService.logDebug(`this tab is now leader > prefix: ${this._prefix} > currentRandomId: ${this._currentRandomId}`);
+            else {
+                this.loggerService.logDebug(`FROM INITIALIZATION FIRST applyOnce > this tab is now leader > prefix: ${this._prefix} > currentRandomId: ${this._currentRandomId}`);
+            }
         });
         this.initializeSilentRenewFinishedChannelWithHandler();
     }

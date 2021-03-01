@@ -2968,12 +2968,18 @@
                 fallbackInterval: 2000,
                 responseTime: 1000,
             });
-            this._elector.awaitLeadership().then(function () {
-                if (!_this._isLeaderSubjectInitialized) {
-                    _this._isLeaderSubjectInitialized = true;
-                    _this._leaderSubjectInitialized$.next(true);
+            this._elector.applyOnce().then(function (isLeader) {
+                _this.loggerService.logDebug('FIRST applyOnce finished...');
+                _this._isLeaderSubjectInitialized = true;
+                _this._leaderSubjectInitialized$.next(true);
+                if (!isLeader) {
+                    _this._elector.awaitLeadership().then(function () {
+                        _this.loggerService.logDebug("FROM awaitLeadership > this tab is now leader > prefix: " + _this._prefix + " > currentRandomId: " + _this._currentRandomId);
+                    });
                 }
-                _this.loggerService.logDebug("this tab is now leader > prefix: " + _this._prefix + " > currentRandomId: " + _this._currentRandomId);
+                else {
+                    _this.loggerService.logDebug("FROM INITIALIZATION FIRST applyOnce > this tab is now leader > prefix: " + _this._prefix + " > currentRandomId: " + _this._currentRandomId);
+                }
             });
             this.initializeSilentRenewFinishedChannelWithHandler();
         };
