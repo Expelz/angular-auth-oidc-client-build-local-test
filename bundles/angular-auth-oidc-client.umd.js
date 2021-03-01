@@ -1982,7 +1982,9 @@
             return null;
         };
         UrlService.prototype.createUrlCodeFlowWithSilentRenew = function (customParams, authStateLauchedType) {
-            var state = this.flowsDataService.createAuthStateControl(authStateLauchedType);
+            var state = authStateLauchedType === 'login'
+                ? this.flowsDataService.getExistingOrCreateAuthStateControl(authStateLauchedType)
+                : this.flowsDataService.createAuthStateControl(authStateLauchedType);
             var nonce = this.flowsDataService.createNonce();
             this.loggerService.logDebug('RefreshSession created. adding myautostate: ' + state);
             // code_challenge with "S256"

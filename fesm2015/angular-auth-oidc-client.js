@@ -1548,7 +1548,9 @@ class UrlService {
         return null;
     }
     createUrlCodeFlowWithSilentRenew(customParams, authStateLauchedType) {
-        const state = this.flowsDataService.createAuthStateControl(authStateLauchedType);
+        const state = authStateLauchedType === 'login'
+            ? this.flowsDataService.getExistingOrCreateAuthStateControl(authStateLauchedType)
+            : this.flowsDataService.createAuthStateControl(authStateLauchedType);
         const nonce = this.flowsDataService.createNonce();
         this.loggerService.logDebug('RefreshSession created. adding myautostate: ' + state);
         // code_challenge with "S256"
