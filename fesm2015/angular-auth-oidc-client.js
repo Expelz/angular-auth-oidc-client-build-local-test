@@ -1231,11 +1231,15 @@ class FlowsDataService {
     setNonce(nonce) {
         this.storagePersistanceService.write('authNonce', nonce);
     }
-    getAuthStateControl() {
+    getAuthStateControl(authStateLauchedType = null) {
         const json = this.storagePersistanceService.read('authStateControl');
         const storageObject = !!json ? JSON.parse(json) : null;
         this.loggerService.logDebug(`getAuthStateControl > storageObject.lauchedFrom ${storageObject.lauchedFrom} > currentTime: ${new Date().toTimeString()}`);
         if (storageObject) {
+            if (authStateLauchedType === 'login' && storageObject.lauchedFrom !== 'login') {
+                this.loggerService.logWarning(`getAuthStateControl > STATE SHOULD BE RE-INITIALIZED FOR LOGIN FLOW > currentTime: ${new Date().toTimeString()}`);
+                return false;
+            }
             if (storageObject.lauchedFrom === 'silent-renew-code') {
                 this.loggerService.logDebug(`getAuthStateControl > STATE LAUNCHED FROM SILENT RENEW: ${storageObject.state} > storageObject.lauchedFrom ${storageObject.lauchedFrom} >  currentTime: ${new Date().toTimeString()}`);
                 const dateOfLaunchedProcessUtc = Date.parse(storageObject.dateOfLaunchedProcessUtc);
@@ -1258,7 +1262,7 @@ class FlowsDataService {
         this.storagePersistanceService.write('authStateControl', authStateControl);
     }
     getExistingOrCreateAuthStateControl(authStateLauchedType) {
-        let state = this.getAuthStateControl();
+        let state = this.getAuthStateControl(authStateLauchedType);
         if (!state) {
             state = this.createAuthStateControl(authStateLauchedType);
         }

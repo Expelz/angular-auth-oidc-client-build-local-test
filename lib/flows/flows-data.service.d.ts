@@ -17,7 +17,7 @@ export declare class FlowsDataService {
     constructor(storagePersistanceService: StoragePersistanceService, randomService: RandomService, configurationProvider: ConfigurationProvider, loggerService: LoggerService);
     createNonce(): string;
     setNonce(nonce: string): void;
-    getAuthStateControl(): any;
+    getAuthStateControl(authStateLauchedType?: AuthStateLauchedType): any;
     setAuthStateControl(authStateControl: string): void;
     getExistingOrCreateAuthStateControl(authStateLauchedType: AuthStateLauchedType): any;
     createAuthStateControl(authStateLauchedType: AuthStateLauchedType): any;
