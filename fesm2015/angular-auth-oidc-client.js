@@ -3422,7 +3422,9 @@ class LogoffRevocationService {
     // If the server state has changed, checksession, then only a local logout.
     logoff(urlHandler) {
         this.loggerService.logDebug('logoff, remove auth ');
-        this.tabsSynchronizationService.closeTabSynchronization();
+        setTimeout(() => {
+            this.tabsSynchronizationService.closeTabSynchronization();
+        }, 1000);
         const endSessionUrl = this.getEndSessionUrl();
         this.flowsService.resetAuthorizationData();
         if (!endSessionUrl) {
@@ -3440,7 +3442,9 @@ class LogoffRevocationService {
         }
     }
     logoffLocal() {
-        this.tabsSynchronizationService.closeTabSynchronization();
+        setTimeout(() => {
+            this.tabsSynchronizationService.closeTabSynchronization();
+        }, 1000);
         this.flowsService.resetAuthorizationData();
     }
     // The refresh token and and the access token are revoked on the server. If the refresh token does not exist

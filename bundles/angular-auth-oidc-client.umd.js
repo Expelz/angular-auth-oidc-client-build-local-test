@@ -3997,8 +3997,11 @@
         // Logs out on the server and the local client.
         // If the server state has changed, checksession, then only a local logout.
         LogoffRevocationService.prototype.logoff = function (urlHandler) {
+            var _this = this;
             this.loggerService.logDebug('logoff, remove auth ');
-            this.tabsSynchronizationService.closeTabSynchronization();
+            setTimeout(function () {
+                _this.tabsSynchronizationService.closeTabSynchronization();
+            }, 1000);
             var endSessionUrl = this.getEndSessionUrl();
             this.flowsService.resetAuthorizationData();
             if (!endSessionUrl) {
@@ -4016,7 +4019,10 @@
             }
         };
         LogoffRevocationService.prototype.logoffLocal = function () {
-            this.tabsSynchronizationService.closeTabSynchronization();
+            var _this = this;
+            setTimeout(function () {
+                _this.tabsSynchronizationService.closeTabSynchronization();
+            }, 1000);
             this.flowsService.resetAuthorizationData();
         };
         // The refresh token and and the access token are revoked on the server. If the refresh token does not exist
