@@ -2972,6 +2972,7 @@
         TabsSynchronizationService.prototype.closeTabSynchronization = function () {
             this.loggerService.logWarning("Tab synchronization has been closed > prefix: " + this._prefix + " > currentRandomId: " + this._currentRandomId);
             this._elector.die();
+            this._silentRenewFinishedChannel.close();
         };
         TabsSynchronizationService.prototype.Initialization = function () {
             var _this = this;
