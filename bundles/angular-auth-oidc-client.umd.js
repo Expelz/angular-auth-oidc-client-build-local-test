@@ -1646,18 +1646,21 @@
         FlowsDataService.prototype.getAuthStateControl = function () {
             var json = this.storagePersistanceService.read('authStateControl');
             var storageObject = !!json ? JSON.parse(json) : null;
-            this.loggerService.logDebug("getAuthStateControl > currentTime: " + new Date().toTimeString());
+            this.loggerService.logDebug("getAuthStateControl > storageObject.lauchedFrom " + storageObject.lauchedFrom + " > currentTime: " + new Date().toTimeString());
             if (storageObject) {
-                var dateOfLaunchedProcessUtc = Date.parse(storageObject.dateOfLaunchedProcessUtc);
-                var currentDateUtc = Date.parse(new Date().toISOString());
-                var elapsedTimeInMilliseconds = Math.abs(currentDateUtc - dateOfLaunchedProcessUtc);
-                var isProbablyStuck = elapsedTimeInMilliseconds > this.configurationProvider.openIDConfiguration.silentRenewTimeoutInSeconds * 1000;
-                if (isProbablyStuck) {
-                    this.loggerService.logWarning('getAuthStateControl -> silent renew process is probably stuck, AuthState will be reset.');
-                    this.storagePersistanceService.write('authStateControl', '');
-                    return false;
+                if (storageObject.lauchedFrom === 'silent-renew-code') {
+                    this.loggerService.logDebug("getAuthStateControl > STATE LAUNCHED FROM SILENT RENEW: " + storageObject.state + " > storageObject.lauchedFrom " + storageObject.lauchedFrom + " >  currentTime: " + new Date().toTimeString());
+                    var dateOfLaunchedProcessUtc = Date.parse(storageObject.dateOfLaunchedProcessUtc);
+                    var currentDateUtc = Date.parse(new Date().toISOString());
+                    var elapsedTimeInMilliseconds = Math.abs(currentDateUtc - dateOfLaunchedProcessUtc);
+                    var isProbablyStuck = elapsedTimeInMilliseconds > this.configurationProvider.openIDConfiguration.silentRenewTimeoutInSeconds * 1000;
+                    if (isProbablyStuck) {
+                        this.loggerService.logWarning('getAuthStateControl -> silent renew process is probably stuck, AuthState will be reset.');
+                        this.storagePersistanceService.write('authStateControl', '');
+                        return false;
+                    }
                 }
-                this.loggerService.logDebug("getAuthStateControl > STATE SUCCESSFULLY RETURNED " + storageObject.state + " > currentTime: " + new Date().toTimeString());
+                this.loggerService.logDebug("getAuthStateControl > storageObject.lauchedFrom " + storageObject.lauchedFrom + " > STATE SUCCESSFULLY RETURNED " + storageObject.state + " > currentTime: " + new Date().toTimeString());
                 return storageObject.state;
             }
             this.loggerService.logWarning("getAuthStateControl > storageObject IS NULL RETURN FALSE > currentTime: " + new Date().toTimeString());
@@ -1666,18 +1669,19 @@
         FlowsDataService.prototype.setAuthStateControl = function (authStateControl) {
             this.storagePersistanceService.write('authStateControl', authStateControl);
         };
-        FlowsDataService.prototype.getExistingOrCreateAuthStateControl = function () {
+        FlowsDataService.prototype.getExistingOrCreateAuthStateControl = function (authStateLauchedType) {
             var state = this.getAuthStateControl();
             if (!state) {
-                state = this.createAuthStateControl();
+                state = this.createAuthStateControl(authStateLauchedType);
             }
             return state;
         };
-        FlowsDataService.prototype.createAuthStateControl = function () {
+        FlowsDataService.prototype.createAuthStateControl = function (authStateLauchedType) {
             var state = this.randomService.createRandom(40);
             var storageObject = {
                 state: state,
                 dateOfLaunchedProcessUtc: new Date().toISOString(),
+                lauchedFrom: authStateLauchedType,
             };
             this.storagePersistanceService.write('authStateControl', JSON.stringify(storageObject));
             return state;
@@ -1958,7 +1962,7 @@
             return authorizationUrl + "?" + params;
         };
         UrlService.prototype.createUrlImplicitFlowWithSilentRenew = function (customParams) {
-            var state = this.flowsDataService.getExistingOrCreateAuthStateControl();
+            var state = this.flowsDataService.getExistingOrCreateAuthStateControl('silent-renew-code');
             var nonce = this.flowsDataService.createNonce();
             var silentRenewUrl = this.getSilentRenewUrl();
             if (!silentRenewUrl) {
@@ -1973,7 +1977,7 @@
             return null;
         };
         UrlService.prototype.createUrlCodeFlowWithSilentRenew = function (customParams) {
-            var state = this.flowsDataService.createAuthStateControl();
+            var state = this.flowsDataService.createAuthStateControl('silent-renew-code');
             var nonce = this.flowsDataService.createNonce();
             this.loggerService.logDebug('RefreshSession created. adding myautostate: ' + state);
             // code_challenge with "S256"
@@ -1991,7 +1995,7 @@
             return null;
         };
         UrlService.prototype.createUrlImplicitFlowAuthorize = function (customParams) {
-            var state = this.flowsDataService.getExistingOrCreateAuthStateControl();
+            var state = this.flowsDataService.getExistingOrCreateAuthStateControl('login');
             var nonce = this.flowsDataService.createNonce();
             this.loggerService.logDebug('Authorize created. adding myautostate: ' + state);
             var redirectUrl = this.getRedirectUrl();
@@ -2006,7 +2010,7 @@
             return null;
         };
         UrlService.prototype.createUrlCodeFlowAuthorize = function (customParams) {
-            var state = this.flowsDataService.createAuthStateControl();
+            var state = this.flowsDataService.createAuthStateControl('login');
             var nonce = this.flowsDataService.createNonce();
             this.loggerService.logDebug('Authorize created. adding myautostate: ' + state);
             var redirectUrl = this.getRedirectUrl();
@@ -2642,7 +2646,7 @@
         };
         // STEP 1 Refresh session
         FlowsService.prototype.refreshSessionWithRefreshTokens = function () {
-            var stateData = this.flowsDataService.getExistingOrCreateAuthStateControl();
+            var stateData = this.flowsDataService.getExistingOrCreateAuthStateControl('refresh-token');
             this.loggerService.logDebug('RefreshSession created. adding myautostate: ' + stateData);
             var refreshToken = this.authStateService.getRefreshToken();
             var idToken = this.authStateService.getIdToken();
