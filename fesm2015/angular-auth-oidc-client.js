@@ -1577,7 +1577,7 @@ class UrlService {
         return null;
     }
     createUrlCodeFlowAuthorize(customParams) {
-        const state = this.flowsDataService.createAuthStateControl('login');
+        const state = this.flowsDataService.getExistingOrCreateAuthStateControl('login');
         const nonce = this.flowsDataService.createNonce();
         this.loggerService.logDebug('Authorize created. adding myautostate: ' + state);
         const redirectUrl = this.getRedirectUrl();

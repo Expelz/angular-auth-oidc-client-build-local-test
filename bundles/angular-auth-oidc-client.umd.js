@@ -2010,7 +2010,7 @@
             return null;
         };
         UrlService.prototype.createUrlCodeFlowAuthorize = function (customParams) {
-            var state = this.flowsDataService.createAuthStateControl('login');
+            var state = this.flowsDataService.getExistingOrCreateAuthStateControl('login');
             var nonce = this.flowsDataService.createNonce();
             this.loggerService.logDebug('Authorize created. adding myautostate: ' + state);
             var redirectUrl = this.getRedirectUrl();
