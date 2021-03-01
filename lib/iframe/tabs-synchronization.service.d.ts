@@ -18,6 +18,7 @@ export declare class TabsSynchronizationService {
     isLeaderCheck(): Promise<boolean>;
     getSilentRenewFinishedObservable(): Observable<boolean>;
     sendSilentRenewFinishedNotification(): void;
+    closeTabSynchronization(): void;
     private Initialization;
     private initializeSilentRenewFinishedChannelWithHandler;
     static ɵfac: i0.ɵɵFactoryDef<TabsSynchronizationService, never>;

@@ -1,6 +1,7 @@
 import { DataService } from '../api/data.service';
 import { FlowsService } from '../flows/flows.service';
 import { CheckSessionService } from '../iframe/check-session.service';
+import { TabsSynchronizationService } from '../iframe/tabs-synchronization.service';
 import { LoggerService } from '../logging/logger.service';
 import { StoragePersistanceService } from '../storage/storage-persistance.service';
 import { RedirectService } from '../utils/redirect/redirect.service';
@@ -14,7 +15,8 @@ export declare class LogoffRevocationService {
     private checkSessionService;
     private flowsService;
     private redirectService;
-    constructor(dataService: DataService, storagePersistanceService: StoragePersistanceService, loggerService: LoggerService, urlService: UrlService, checkSessionService: CheckSessionService, flowsService: FlowsService, redirectService: RedirectService);
+    private tabsSynchronizationService;
+    constructor(dataService: DataService, storagePersistanceService: StoragePersistanceService, loggerService: LoggerService, urlService: UrlService, checkSessionService: CheckSessionService, flowsService: FlowsService, redirectService: RedirectService, tabsSynchronizationService: TabsSynchronizationService);
     logoff(urlHandler?: (url: string) => any): void;
     logoffLocal(): void;
     logoffAndRevokeTokens(urlHandler?: (url: string) => any): import("rxjs").Observable<any>;

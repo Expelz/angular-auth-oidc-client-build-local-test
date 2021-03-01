@@ -2484,6 +2484,10 @@ class TabsSynchronizationService {
         }
         this._silentRenewFinishedChannel.postMessage(`Silent renew finished by _currentRandomId ${this._currentRandomId}`);
     }
+    closeTabSynchronization() {
+        this.loggerService.logWarning(`Tab synchronization has been closed > prefix: ${this._prefix} > currentRandomId: ${this._currentRandomId}`);
+        this._elector.die();
+    }
     Initialization() {
         var _a;
         this.loggerService.logDebug('TabsSynchronizationService > Initialization started');
@@ -3404,7 +3408,7 @@ LoginService.ɵprov = ɵɵdefineInjectable({ token: LoginService, factory: Login
     }], function () { return [{ type: LoggerService }, { type: TokenValidationService }, { type: UrlService }, { type: RedirectService }, { type: ConfigurationProvider }, { type: AuthWellKnownService }, { type: PopUpService }, { type: CheckAuthService }, { type: UserService }, { type: AuthStateService }]; }, null); })();
 
 class LogoffRevocationService {
-    constructor(dataService, storagePersistanceService, loggerService, urlService, checkSessionService, flowsService, redirectService) {
+    constructor(dataService, storagePersistanceService, loggerService, urlService, checkSessionService, flowsService, redirectService, tabsSynchronizationService) {
         this.dataService = dataService;
         this.storagePersistanceService = storagePersistanceService;
         this.loggerService = loggerService;
@@ -3412,11 +3416,13 @@ class LogoffRevocationService {
         this.checkSessionService = checkSessionService;
         this.flowsService = flowsService;
         this.redirectService = redirectService;
+        this.tabsSynchronizationService = tabsSynchronizationService;
     }
     // Logs out on the server and the local client.
     // If the server state has changed, checksession, then only a local logout.
     logoff(urlHandler) {
         this.loggerService.logDebug('logoff, remove auth ');
+        this.tabsSynchronizationService.closeTabSynchronization();
         const endSessionUrl = this.getEndSessionUrl();
         this.flowsService.resetAuthorizationData();
         if (!endSessionUrl) {
@@ -3434,6 +3440,7 @@ class LogoffRevocationService {
         }
     }
     logoffLocal() {
+        this.tabsSynchronizationService.closeTabSynchronization();
         this.flowsService.resetAuthorizationData();
     }
     // The refresh token and and the access token are revoked on the server. If the refresh token does not exist
@@ -3502,11 +3509,11 @@ class LogoffRevocationService {
         return this.urlService.createEndSessionUrl(idToken);
     }
 }
-LogoffRevocationService.ɵfac = function LogoffRevocationService_Factory(t) { return new (t || LogoffRevocationService)(ɵɵinject(DataService), ɵɵinject(StoragePersistanceService), ɵɵinject(LoggerService), ɵɵinject(UrlService), ɵɵinject(CheckSessionService), ɵɵinject(FlowsService), ɵɵinject(RedirectService)); };
+LogoffRevocationService.ɵfac = function LogoffRevocationService_Factory(t) { return new (t || LogoffRevocationService)(ɵɵinject(DataService), ɵɵinject(StoragePersistanceService), ɵɵinject(LoggerService), ɵɵinject(UrlService), ɵɵinject(CheckSessionService), ɵɵinject(FlowsService), ɵɵinject(RedirectService), ɵɵinject(TabsSynchronizationService)); };
 LogoffRevocationService.ɵprov = ɵɵdefineInjectable({ token: LogoffRevocationService, factory: LogoffRevocationService.ɵfac });
 /*@__PURE__*/ (function () { ɵsetClassMetadata(LogoffRevocationService, [{
         type: Injectable
-    }], function () { return [{ type: DataService }, { type: StoragePersistanceService }, { type: LoggerService }, { type: UrlService }, { type: CheckSessionService }, { type: FlowsService }, { type: RedirectService }]; }, null); })();
+    }], function () { return [{ type: DataService }, { type: StoragePersistanceService }, { type: LoggerService }, { type: UrlService }, { type: CheckSessionService }, { type: FlowsService }, { type: RedirectService }, { type: TabsSynchronizationService }]; }, null); })();
 
 class OidcSecurityService {
     constructor(checkSessionService, checkAuthService, userService, tokenHelperService, configurationProvider, authStateService, flowsDataService, callbackService, logoffRevocationService, loginService, storagePersistanceService, refreshSessionService) {

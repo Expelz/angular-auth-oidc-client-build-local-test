@@ -2969,6 +2969,10 @@
             }
             this._silentRenewFinishedChannel.postMessage("Silent renew finished by _currentRandomId " + this._currentRandomId);
         };
+        TabsSynchronizationService.prototype.closeTabSynchronization = function () {
+            this.loggerService.logWarning("Tab synchronization has been closed > prefix: " + this._prefix + " > currentRandomId: " + this._currentRandomId);
+            this._elector.die();
+        };
         TabsSynchronizationService.prototype.Initialization = function () {
             var _this = this;
             var _a;
@@ -3980,7 +3984,7 @@
     })();
 
     var LogoffRevocationService = /** @class */ (function () {
-        function LogoffRevocationService(dataService, storagePersistanceService, loggerService, urlService, checkSessionService, flowsService, redirectService) {
+        function LogoffRevocationService(dataService, storagePersistanceService, loggerService, urlService, checkSessionService, flowsService, redirectService, tabsSynchronizationService) {
             this.dataService = dataService;
             this.storagePersistanceService = storagePersistanceService;
             this.loggerService = loggerService;
@@ -3988,11 +3992,13 @@
             this.checkSessionService = checkSessionService;
             this.flowsService = flowsService;
             this.redirectService = redirectService;
+            this.tabsSynchronizationService = tabsSynchronizationService;
         }
         // Logs out on the server and the local client.
         // If the server state has changed, checksession, then only a local logout.
         LogoffRevocationService.prototype.logoff = function (urlHandler) {
             this.loggerService.logDebug('logoff, remove auth ');
+            this.tabsSynchronizationService.closeTabSynchronization();
             var endSessionUrl = this.getEndSessionUrl();
             this.flowsService.resetAuthorizationData();
             if (!endSessionUrl) {
@@ -4010,6 +4016,7 @@
             }
         };
         LogoffRevocationService.prototype.logoffLocal = function () {
+            this.tabsSynchronizationService.closeTabSynchronization();
             this.flowsService.resetAuthorizationData();
         };
         // The refresh token and and the access token are revoked on the server. If the refresh token does not exist
@@ -4082,12 +4089,12 @@
         };
         return LogoffRevocationService;
     }());
-    LogoffRevocationService.ɵfac = function LogoffRevocationService_Factory(t) { return new (t || LogoffRevocationService)(i0.ɵɵinject(DataService), i0.ɵɵinject(StoragePersistanceService), i0.ɵɵinject(LoggerService), i0.ɵɵinject(UrlService), i0.ɵɵinject(CheckSessionService), i0.ɵɵinject(FlowsService), i0.ɵɵinject(RedirectService)); };
+    LogoffRevocationService.ɵfac = function LogoffRevocationService_Factory(t) { return new (t || LogoffRevocationService)(i0.ɵɵinject(DataService), i0.ɵɵinject(StoragePersistanceService), i0.ɵɵinject(LoggerService), i0.ɵɵinject(UrlService), i0.ɵɵinject(CheckSessionService), i0.ɵɵinject(FlowsService), i0.ɵɵinject(RedirectService), i0.ɵɵinject(TabsSynchronizationService)); };
     LogoffRevocationService.ɵprov = i0.ɵɵdefineInjectable({ token: LogoffRevocationService, factory: LogoffRevocationService.ɵfac });
     /*@__PURE__*/ (function () {
         i0.ɵsetClassMetadata(LogoffRevocationService, [{
                 type: i0.Injectable
-            }], function () { return [{ type: DataService }, { type: StoragePersistanceService }, { type: LoggerService }, { type: UrlService }, { type: CheckSessionService }, { type: FlowsService }, { type: RedirectService }]; }, null);
+            }], function () { return [{ type: DataService }, { type: StoragePersistanceService }, { type: LoggerService }, { type: UrlService }, { type: CheckSessionService }, { type: FlowsService }, { type: RedirectService }, { type: TabsSynchronizationService }]; }, null);
     })();
 
     var OidcSecurityService = /** @class */ (function () {
