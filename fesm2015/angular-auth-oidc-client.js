@@ -2869,7 +2869,7 @@ class RefreshSessionService {
         if (currentRetry && currentRetry > MAX_RETRY_ATTEMPTS) {
             return throwError(new Error('Initializatin has been failed. Exceeded max retry attepmts.'));
         }
-        return from(this.tabsSynchronizationService.isLeaderCheck()).pipe(take(1), switchMap((isLeader) => {
+        return from(this.tabsSynchronizationService.isLeaderCheck()).pipe(timeout(2000), take(1), switchMap((isLeader) => {
             if (isLeader) {
                 this.loggerService.logDebug(`forceRefreshSession WE ARE LEADER`);
                 return forkJoin([
@@ -2926,6 +2926,18 @@ class RefreshSessionService {
                     return null;
                 }));
             }
+        }), catchError((error) => {
+            if (error instanceof TimeoutError) {
+                this.loggerService.logWarning(`forceRefreshSession > FROM isLeaderCheck > occured TIMEOUT ERROR SO WE RETRY: this.forceRefreshSession(customParams)`);
+                if (currentRetry) {
+                    currentRetry++;
+                }
+                else {
+                    currentRetry = 1;
+                }
+                return this.silentRenewCase(customParams, currentRetry);
+            }
+            throw error;
         }));
     }
     startRefreshSession(customParams) {

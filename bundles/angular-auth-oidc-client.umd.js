@@ -3400,7 +3400,7 @@
             if (currentRetry && currentRetry > MAX_RETRY_ATTEMPTS) {
                 return rxjs.throwError(new Error('Initializatin has been failed. Exceeded max retry attepmts.'));
             }
-            return rxjs.from(this.tabsSynchronizationService.isLeaderCheck()).pipe(operators.take(1), operators.switchMap(function (isLeader) {
+            return rxjs.from(this.tabsSynchronizationService.isLeaderCheck()).pipe(operators.timeout(2000), operators.take(1), operators.switchMap(function (isLeader) {
                 if (isLeader) {
                     _this.loggerService.logDebug("forceRefreshSession WE ARE LEADER");
                     return rxjs.forkJoin([
@@ -3458,6 +3458,18 @@
                         return null;
                     }));
                 }
+            }), operators.catchError(function (error) {
+                if (error instanceof rxjs.TimeoutError) {
+                    _this.loggerService.logWarning("forceRefreshSession > FROM isLeaderCheck > occured TIMEOUT ERROR SO WE RETRY: this.forceRefreshSession(customParams)");
+                    if (currentRetry) {
+                        currentRetry++;
+                    }
+                    else {
+                        currentRetry = 1;
+                    }
+                    return _this.silentRenewCase(customParams, currentRetry);
+                }
+                throw error;
             }));
         };
         RefreshSessionService.prototype.startRefreshSession = function (customParams) {
