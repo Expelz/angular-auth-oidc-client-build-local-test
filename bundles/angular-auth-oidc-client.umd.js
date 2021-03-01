@@ -1804,9 +1804,9 @@
             var anyParameterIsGiven = CALLBACK_PARAMS_TO_CHECK.some(function (x) { return !!_this.getUrlParameter(currentUrl, x); });
             return anyParameterIsGiven;
         };
-        UrlService.prototype.getRefreshSessionSilentRenewUrl = function (customParams) {
+        UrlService.prototype.getRefreshSessionSilentRenewUrl = function (customParams, authStateLauchedType) {
             if (this.flowHelper.isCurrentFlowCodeFlow()) {
-                return this.createUrlCodeFlowWithSilentRenew(customParams);
+                return this.createUrlCodeFlowWithSilentRenew(customParams, authStateLauchedType);
             }
             return this.createUrlImplicitFlowWithSilentRenew(customParams) || '';
         };
@@ -1981,8 +1981,8 @@
             this.loggerService.logError('authWellKnownEndpoints is undefined');
             return null;
         };
-        UrlService.prototype.createUrlCodeFlowWithSilentRenew = function (customParams) {
-            var state = this.flowsDataService.createAuthStateControl('silent-renew-code');
+        UrlService.prototype.createUrlCodeFlowWithSilentRenew = function (customParams, authStateLauchedType) {
+            var state = this.flowsDataService.createAuthStateControl(authStateLauchedType);
             var nonce = this.flowsDataService.createNonce();
             this.loggerService.logDebug('RefreshSession created. adding myautostate: ' + state);
             // code_challenge with "S256"
@@ -3281,9 +3281,9 @@
             this.silentRenewService = silentRenewService;
             this.renderer = rendererFactory.createRenderer(null, null);
         }
-        RefreshSessionIframeService.prototype.refreshSessionWithIframe = function (customParams) {
+        RefreshSessionIframeService.prototype.refreshSessionWithIframe = function (customParams, authStateLauchedType) {
             this.loggerService.logDebug('BEGIN refresh session Authorize Iframe renew');
-            var url = this.urlService.getRefreshSessionSilentRenewUrl(customParams);
+            var url = this.urlService.getRefreshSessionSilentRenewUrl(customParams, authStateLauchedType);
             return this.sendAuthorizeReqestUsingSilentRenew(url);
         };
         RefreshSessionIframeService.prototype.sendAuthorizeReqestUsingSilentRenew = function (url) {
@@ -3474,7 +3474,7 @@
                     // Refresh Session using Refresh tokens
                     return _this.refreshSessionRefreshTokenService.refreshSessionWithRefreshTokens(customParams);
                 }
-                return _this.refreshSessionIframeService.refreshSessionWithIframe(customParams);
+                return _this.refreshSessionIframeService.refreshSessionWithIframe(customParams, 'login');
             }));
         };
         return RefreshSessionService;
@@ -3537,7 +3537,7 @@
                             // Refresh Session using Refresh tokens
                             return _this.refreshSessionRefreshTokenService.refreshSessionWithRefreshTokens(customParams);
                         }
-                        return _this.refreshSessionIframeService.refreshSessionWithIframe(customParams);
+                        return _this.refreshSessionIframeService.refreshSessionWithIframe(customParams, 'silent-renew-code');
                     }
                     return rxjs.of(null);
                 }));

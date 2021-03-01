@@ -1,5 +1,5 @@
 import { ConfigurationProvider } from '../../config/config.provider';
-import { FlowsDataService } from '../../flows/flows-data.service';
+import { AuthStateLauchedType, FlowsDataService } from '../../flows/flows-data.service';
 import { LoggerService } from '../../logging/logger.service';
 import { StoragePersistanceService } from '../../storage/storage-persistance.service';
 import { TokenValidationService } from '../../validation/token-validation.service';
@@ -17,7 +17,7 @@ export declare class UrlService {
     isCallbackFromSts(currentUrl: string): boolean;
     getRefreshSessionSilentRenewUrl(customParams?: {
         [key: string]: string | number | boolean;
-    }): string;
+    }, authStateLauchedType?: AuthStateLauchedType): string;
     getAuthorizeUrl(customParams?: {
         [key: string]: string | number | boolean;
     }): string;

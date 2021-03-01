@@ -1387,9 +1387,9 @@ class UrlService {
         const anyParameterIsGiven = CALLBACK_PARAMS_TO_CHECK.some((x) => !!this.getUrlParameter(currentUrl, x));
         return anyParameterIsGiven;
     }
-    getRefreshSessionSilentRenewUrl(customParams) {
+    getRefreshSessionSilentRenewUrl(customParams, authStateLauchedType) {
         if (this.flowHelper.isCurrentFlowCodeFlow()) {
-            return this.createUrlCodeFlowWithSilentRenew(customParams);
+            return this.createUrlCodeFlowWithSilentRenew(customParams, authStateLauchedType);
         }
         return this.createUrlImplicitFlowWithSilentRenew(customParams) || '';
     }
@@ -1547,8 +1547,8 @@ class UrlService {
         this.loggerService.logError('authWellKnownEndpoints is undefined');
         return null;
     }
-    createUrlCodeFlowWithSilentRenew(customParams) {
-        const state = this.flowsDataService.createAuthStateControl('silent-renew-code');
+    createUrlCodeFlowWithSilentRenew(customParams, authStateLauchedType) {
+        const state = this.flowsDataService.createAuthStateControl(authStateLauchedType);
         const nonce = this.flowsDataService.createNonce();
         this.loggerService.logDebug('RefreshSession created. adding myautostate: ' + state);
         // code_challenge with "S256"
@@ -2763,9 +2763,9 @@ class RefreshSessionIframeService {
         this.silentRenewService = silentRenewService;
         this.renderer = rendererFactory.createRenderer(null, null);
     }
-    refreshSessionWithIframe(customParams) {
+    refreshSessionWithIframe(customParams, authStateLauchedType) {
         this.loggerService.logDebug('BEGIN refresh session Authorize Iframe renew');
-        const url = this.urlService.getRefreshSessionSilentRenewUrl(customParams);
+        const url = this.urlService.getRefreshSessionSilentRenewUrl(customParams, authStateLauchedType);
         return this.sendAuthorizeReqestUsingSilentRenew(url);
     }
     sendAuthorizeReqestUsingSilentRenew(url) {
@@ -2941,7 +2941,7 @@ class RefreshSessionService {
                 // Refresh Session using Refresh tokens
                 return this.refreshSessionRefreshTokenService.refreshSessionWithRefreshTokens(customParams);
             }
-            return this.refreshSessionIframeService.refreshSessionWithIframe(customParams);
+            return this.refreshSessionIframeService.refreshSessionWithIframe(customParams, 'login');
         }));
     }
 }
@@ -3000,7 +3000,7 @@ class PeriodicallyTokenCheckService {
                         // Refresh Session using Refresh tokens
                         return this.refreshSessionRefreshTokenService.refreshSessionWithRefreshTokens(customParams);
                     }
-                    return this.refreshSessionIframeService.refreshSessionWithIframe(customParams);
+                    return this.refreshSessionIframeService.refreshSessionWithIframe(customParams, 'silent-renew-code');
                 }
                 return of(null);
             }));
