@@ -1234,7 +1234,7 @@ class FlowsDataService {
     getAuthStateControl(authStateLauchedType = null) {
         const json = this.storagePersistanceService.read('authStateControl');
         const storageObject = !!json ? JSON.parse(json) : null;
-        this.loggerService.logDebug(`getAuthStateControl > storageObject.lauchedFrom ${storageObject.lauchedFrom} > currentTime: ${new Date().toTimeString()}`);
+        this.loggerService.logDebug(`getAuthStateControl > currentTime: ${new Date().toTimeString()} > storageObject see inner details:`, storageObject);
         if (storageObject) {
             if (authStateLauchedType === 'login' && storageObject.lauchedFrom !== 'login') {
                 this.loggerService.logWarning(`getAuthStateControl > STATE SHOULD BE RE-INITIALIZED FOR LOGIN FLOW > currentTime: ${new Date().toTimeString()}`);
