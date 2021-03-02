@@ -4052,10 +4052,7 @@
             }
         };
         LogoffRevocationService.prototype.logoffLocal = function () {
-            var _this = this;
-            setTimeout(function () {
-                _this.tabsSynchronizationService.closeTabSynchronization();
-            }, 1000);
+            this.tabsSynchronizationService.closeTabSynchronization();
             this.flowsService.resetAuthorizationData();
         };
         // The refresh token and and the access token are revoked on the server. If the refresh token does not exist
