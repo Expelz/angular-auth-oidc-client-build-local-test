@@ -2982,6 +2982,7 @@
             this._elector.die();
             this._silentRenewFinishedChannel.close();
             this._leaderChannel.close();
+            this._isLeaderSubjectInitialized = false;
             this._isClosed = true;
         };
         TabsSynchronizationService.prototype.reInitialize = function () {
@@ -3427,7 +3428,7 @@
                     return rxjs.forkJoin([
                         _this.startRefreshSession(customParams),
                         _this.silentRenewService.refreshSessionWithIFrameCompleted$.pipe(operators.take(1)),
-                    ]).pipe(operators.timeout(_this.configurationProvider.openIDConfiguration.silentRenewTimeoutInSeconds * 1000), operators.map(function (_c) {
+                    ]).pipe(operators.timeout(5000), operators.map(function (_c) {
                         var _d = __read(_c, 2), _ = _d[0], callbackContext = _d[1];
                         var _a, _b;
                         var isAuthenticated = _this.authStateService.areAuthStorageTokensValid();
@@ -3454,7 +3455,7 @@
                 }
                 else {
                     _this.loggerService.logDebug("forceRefreshSession WE ARE NOT NOT NOT LEADER");
-                    return _this.tabsSynchronizationService.getSilentRenewFinishedObservable().pipe(operators.take(1), operators.timeout(_this.configurationProvider.openIDConfiguration.silentRenewTimeoutInSeconds * 1000), operators.catchError(function (error) {
+                    return _this.tabsSynchronizationService.getSilentRenewFinishedObservable().pipe(operators.take(1), operators.timeout(5000), operators.catchError(function (error) {
                         if (error instanceof rxjs.TimeoutError) {
                             _this.loggerService.logWarning("forceRefreshSession WE ARE NOT NOT NOT LEADER > occured TIMEOUT ERROR SO WE RETRY: this.forceRefreshSession(customParams)");
                             if (currentRetry) {
@@ -3556,6 +3557,10 @@
                 var shouldBeExecuted = userDataFromStore && !isSilentRenewRunning && idToken;
                 if (!shouldBeExecuted) {
                     return rxjs.of(null);
+                }
+                if (_this.tabsSynchronizationService.isClosed) {
+                    _this.loggerService.logWarning('startTokenValidationPeriodically > this.tabsSynchronizationService.isClosed = TRUE - so we re-initialize');
+                    _this.tabsSynchronizationService.reInitialize();
                 }
                 var idTokenHasExpired = _this.authStateService.hasIdTokenExpired();
                 var accessTokenHasExpired = _this.authStateService.hasAccessTokenExpiredIfExpiryExists();
@@ -3670,7 +3675,7 @@
     })();
 
     var CheckAuthService = /** @class */ (function () {
-        function CheckAuthService(doc, checkSessionService, silentRenewService, userService, loggerService, configurationProvider, authStateService, callbackService, refreshSessionService, periodicallyTokenCheckService, popupService, tabsSynchronizationService) {
+        function CheckAuthService(doc, checkSessionService, silentRenewService, userService, loggerService, configurationProvider, authStateService, callbackService, refreshSessionService, periodicallyTokenCheckService, popupService) {
             this.doc = doc;
             this.checkSessionService = checkSessionService;
             this.silentRenewService = silentRenewService;
@@ -3682,7 +3687,6 @@
             this.refreshSessionService = refreshSessionService;
             this.periodicallyTokenCheckService = periodicallyTokenCheckService;
             this.popupService = popupService;
-            this.tabsSynchronizationService = tabsSynchronizationService;
         }
         CheckAuthService.prototype.checkAuth = function (url) {
             var _this = this;
@@ -3703,10 +3707,6 @@
                 var isAuthenticated = _this.authStateService.areAuthStorageTokensValid();
                 if (isAuthenticated) {
                     _this.startCheckSessionAndValidation();
-                    if (_this.tabsSynchronizationService.isClosed) {
-                        _this.loggerService.logDebug('this.tabsSynchronizationService.isClosed = TRUE - so we re-initialize');
-                        _this.tabsSynchronizationService.reInitialize();
-                    }
                     if (!isCallback) {
                         _this.authStateService.setAuthorizedAndFireEvent();
                         _this.userService.publishUserDataIfExists();
@@ -3741,7 +3741,7 @@
         };
         return CheckAuthService;
     }());
-    CheckAuthService.ɵfac = function CheckAuthService_Factory(t) { return new (t || CheckAuthService)(i0.ɵɵinject(common.DOCUMENT), i0.ɵɵinject(CheckSessionService), i0.ɵɵinject(SilentRenewService), i0.ɵɵinject(UserService), i0.ɵɵinject(LoggerService), i0.ɵɵinject(ConfigurationProvider), i0.ɵɵinject(AuthStateService), i0.ɵɵinject(CallbackService), i0.ɵɵinject(RefreshSessionService), i0.ɵɵinject(PeriodicallyTokenCheckService), i0.ɵɵinject(PopUpService), i0.ɵɵinject(TabsSynchronizationService)); };
+    CheckAuthService.ɵfac = function CheckAuthService_Factory(t) { return new (t || CheckAuthService)(i0.ɵɵinject(common.DOCUMENT), i0.ɵɵinject(CheckSessionService), i0.ɵɵinject(SilentRenewService), i0.ɵɵinject(UserService), i0.ɵɵinject(LoggerService), i0.ɵɵinject(ConfigurationProvider), i0.ɵɵinject(AuthStateService), i0.ɵɵinject(CallbackService), i0.ɵɵinject(RefreshSessionService), i0.ɵɵinject(PeriodicallyTokenCheckService), i0.ɵɵinject(PopUpService)); };
     CheckAuthService.ɵprov = i0.ɵɵdefineInjectable({ token: CheckAuthService, factory: CheckAuthService.ɵfac });
     /*@__PURE__*/ (function () {
         i0.ɵsetClassMetadata(CheckAuthService, [{
@@ -3750,7 +3750,7 @@
             return [{ type: undefined, decorators: [{
                             type: i0.Inject,
                             args: [common.DOCUMENT]
-                        }] }, { type: CheckSessionService }, { type: SilentRenewService }, { type: UserService }, { type: LoggerService }, { type: ConfigurationProvider }, { type: AuthStateService }, { type: CallbackService }, { type: RefreshSessionService }, { type: PeriodicallyTokenCheckService }, { type: PopUpService }, { type: TabsSynchronizationService }];
+                        }] }, { type: CheckSessionService }, { type: SilentRenewService }, { type: UserService }, { type: LoggerService }, { type: ConfigurationProvider }, { type: AuthStateService }, { type: CallbackService }, { type: RefreshSessionService }, { type: PeriodicallyTokenCheckService }, { type: PopUpService }];
         }, null);
     })();
 
