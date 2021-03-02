@@ -2450,10 +2450,14 @@ class TabsSynchronizationService {
         this.publicEventsService = publicEventsService;
         this.loggerService = loggerService;
         this._isLeaderSubjectInitialized = false;
+        this._isClosed = false;
         this._silentRenewFinished$ = new ReplaySubject(1);
         this._leaderSubjectInitialized$ = new ReplaySubject(1);
         this._currentRandomId = `${Math.random().toString(36).substr(2, 9)}_${new Date().getUTCMilliseconds()}`;
         this.Initialization();
+    }
+    get isClosed() {
+        return this._isClosed;
     }
     isLeaderCheck() {
         this.loggerService.logDebug(`isLeaderCheck > prefix: ${this._prefix} > currentRandomId: ${this._currentRandomId}`);
@@ -2488,13 +2492,25 @@ class TabsSynchronizationService {
         this.loggerService.logWarning(`Tab synchronization has been closed > prefix: ${this._prefix} > currentRandomId: ${this._currentRandomId}`);
         this._elector.die();
         this._silentRenewFinishedChannel.close();
+        this._leaderChannel.close();
+        this._isClosed = true;
+    }
+    reInitialize() {
+        this.loggerService.logDebug('TabsSynchronizationService re-initialization process started...');
+        if (!this._isClosed) {
+            throw Error('TabsSynchronizationService cannot be re-initialized when it is not closed.');
+        }
+        this._silentRenewFinished$ = new ReplaySubject(1);
+        this._leaderSubjectInitialized$ = new ReplaySubject(1);
+        this.Initialization();
+        this._isClosed = false;
     }
     Initialization() {
         var _a;
         this.loggerService.logDebug('TabsSynchronizationService > Initialization started');
         this._prefix = ((_a = this.configurationProvider.openIDConfiguration) === null || _a === void 0 ? void 0 : _a.clientId) || '';
-        const channel = new BroadcastChannel(`${this._prefix}_leader`);
-        this._elector = createLeaderElection(channel, {
+        this._leaderChannel = new BroadcastChannel(`${this._prefix}_leader`);
+        this._elector = createLeaderElection(this._leaderChannel, {
             fallbackInterval: 2000,
             responseTime: 1000,
         });
@@ -3099,7 +3115,7 @@ PopUpService.ɵprov = ɵɵdefineInjectable({ token: PopUpService, factory: PopUp
     }], null, null); })();
 
 class CheckAuthService {
-    constructor(doc, checkSessionService, silentRenewService, userService, loggerService, configurationProvider, authStateService, callbackService, refreshSessionService, periodicallyTokenCheckService, popupService) {
+    constructor(doc, checkSessionService, silentRenewService, userService, loggerService, configurationProvider, authStateService, callbackService, refreshSessionService, periodicallyTokenCheckService, popupService, tabsSynchronizationService) {
         this.doc = doc;
         this.checkSessionService = checkSessionService;
         this.silentRenewService = silentRenewService;
@@ -3111,6 +3127,7 @@ class CheckAuthService {
         this.refreshSessionService = refreshSessionService;
         this.periodicallyTokenCheckService = periodicallyTokenCheckService;
         this.popupService = popupService;
+        this.tabsSynchronizationService = tabsSynchronizationService;
     }
     checkAuth(url) {
         if (!this.configurationProvider.hasValidConfig()) {
@@ -3130,6 +3147,10 @@ class CheckAuthService {
             const isAuthenticated = this.authStateService.areAuthStorageTokensValid();
             if (isAuthenticated) {
                 this.startCheckSessionAndValidation();
+                if (this.tabsSynchronizationService.isClosed) {
+                    this.loggerService.logDebug('this.tabsSynchronizationService.isClosed = TRUE - so we re-initialize');
+                    this.tabsSynchronizationService.reInitialize();
+                }
                 if (!isCallback) {
                     this.authStateService.setAuthorizedAndFireEvent();
                     this.userService.publishUserDataIfExists();
@@ -3162,14 +3183,14 @@ class CheckAuthService {
         }
     }
 }
-CheckAuthService.ɵfac = function CheckAuthService_Factory(t) { return new (t || CheckAuthService)(ɵɵinject(DOCUMENT), ɵɵinject(CheckSessionService), ɵɵinject(SilentRenewService), ɵɵinject(UserService), ɵɵinject(LoggerService), ɵɵinject(ConfigurationProvider), ɵɵinject(AuthStateService), ɵɵinject(CallbackService), ɵɵinject(RefreshSessionService), ɵɵinject(PeriodicallyTokenCheckService), ɵɵinject(PopUpService)); };
+CheckAuthService.ɵfac = function CheckAuthService_Factory(t) { return new (t || CheckAuthService)(ɵɵinject(DOCUMENT), ɵɵinject(CheckSessionService), ɵɵinject(SilentRenewService), ɵɵinject(UserService), ɵɵinject(LoggerService), ɵɵinject(ConfigurationProvider), ɵɵinject(AuthStateService), ɵɵinject(CallbackService), ɵɵinject(RefreshSessionService), ɵɵinject(PeriodicallyTokenCheckService), ɵɵinject(PopUpService), ɵɵinject(TabsSynchronizationService)); };
 CheckAuthService.ɵprov = ɵɵdefineInjectable({ token: CheckAuthService, factory: CheckAuthService.ɵfac });
 /*@__PURE__*/ (function () { ɵsetClassMetadata(CheckAuthService, [{
         type: Injectable
     }], function () { return [{ type: undefined, decorators: [{
                 type: Inject,
                 args: [DOCUMENT]
-            }] }, { type: CheckSessionService }, { type: SilentRenewService }, { type: UserService }, { type: LoggerService }, { type: ConfigurationProvider }, { type: AuthStateService }, { type: CallbackService }, { type: RefreshSessionService }, { type: PeriodicallyTokenCheckService }, { type: PopUpService }]; }, null); })();
+            }] }, { type: CheckSessionService }, { type: SilentRenewService }, { type: UserService }, { type: LoggerService }, { type: ConfigurationProvider }, { type: AuthStateService }, { type: CallbackService }, { type: RefreshSessionService }, { type: PeriodicallyTokenCheckService }, { type: PopUpService }, { type: TabsSynchronizationService }]; }, null); })();
 
 const POSITIVE_VALIDATION_RESULT = {
     result: true,

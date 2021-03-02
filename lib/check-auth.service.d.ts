@@ -6,6 +6,7 @@ import { RefreshSessionService } from './callback/refresh-session.service';
 import { ConfigurationProvider } from './config/config.provider';
 import { CheckSessionService } from './iframe/check-session.service';
 import { SilentRenewService } from './iframe/silent-renew.service';
+import { TabsSynchronizationService } from './iframe/tabs-synchronization.service';
 import { LoggerService } from './logging/logger.service';
 import { PopUpService } from './login/popup.service';
 import { UserService } from './userData/user-service';
@@ -22,7 +23,8 @@ export declare class CheckAuthService {
     private refreshSessionService;
     private periodicallyTokenCheckService;
     private popupService;
-    constructor(doc: any, checkSessionService: CheckSessionService, silentRenewService: SilentRenewService, userService: UserService, loggerService: LoggerService, configurationProvider: ConfigurationProvider, authStateService: AuthStateService, callbackService: CallbackService, refreshSessionService: RefreshSessionService, periodicallyTokenCheckService: PeriodicallyTokenCheckService, popupService: PopUpService);
+    private tabsSynchronizationService;
+    constructor(doc: any, checkSessionService: CheckSessionService, silentRenewService: SilentRenewService, userService: UserService, loggerService: LoggerService, configurationProvider: ConfigurationProvider, authStateService: AuthStateService, callbackService: CallbackService, refreshSessionService: RefreshSessionService, periodicallyTokenCheckService: PeriodicallyTokenCheckService, popupService: PopUpService, tabsSynchronizationService: TabsSynchronizationService);
     checkAuth(url?: string): Observable<boolean>;
     checkAuthIncludingServer(): Observable<boolean>;
     private startCheckSessionAndValidation;
