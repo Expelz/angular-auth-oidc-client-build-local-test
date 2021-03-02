@@ -2470,13 +2470,11 @@ class TabsSynchronizationService {
             }))
                 .toPromise();
         }
-        this.loggerService.logDebug(`isLeaderCheck > IS LEADER IS ALREADY INITIALIZED SUCCESSFULLY> prefix: ${this._prefix} > currentRandomId: ${this._currentRandomId}`);
+        this.loggerService.logDebug(`isLeaderCheck > IS LEADER IS ALREADY INITIALIZED > prefix: ${this._prefix} > currentRandomId: ${this._currentRandomId}`);
         return new Promise((resolve) => {
-            setTimeout(() => {
-                const isLeader = this._elector.isLeader;
-                this.loggerService.logWarning(`isLeaderCheck > prefix: ${this._prefix} > currentRandomId: ${this._currentRandomId} > inside setTimeout isLeader = ${isLeader}`);
-                resolve(isLeader);
-            }, 1000);
+            const isLeaderResult = this._elector.isLeader;
+            this.loggerService.logDebug(`isLeaderCheck > isLeader result = ${isLeaderResult} > prefix: ${this._prefix} > currentRandomId: ${this._currentRandomId}`);
+            resolve(isLeaderResult);
         });
     }
     getSilentRenewFinishedObservable() {
@@ -3456,9 +3454,7 @@ class LogoffRevocationService {
     // If the server state has changed, checksession, then only a local logout.
     logoff(urlHandler) {
         this.loggerService.logDebug('logoff, remove auth ');
-        setTimeout(() => {
-            this.tabsSynchronizationService.closeTabSynchronization();
-        }, 1000);
+        this.tabsSynchronizationService.closeTabSynchronization();
         const endSessionUrl = this.getEndSessionUrl();
         this.flowsService.resetAuthorizationData();
         if (!endSessionUrl) {

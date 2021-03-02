@@ -2959,13 +2959,11 @@
                 }))
                     .toPromise();
             }
-            this.loggerService.logDebug("isLeaderCheck > IS LEADER IS ALREADY INITIALIZED SUCCESSFULLY> prefix: " + this._prefix + " > currentRandomId: " + this._currentRandomId);
+            this.loggerService.logDebug("isLeaderCheck > IS LEADER IS ALREADY INITIALIZED > prefix: " + this._prefix + " > currentRandomId: " + this._currentRandomId);
             return new Promise(function (resolve) {
-                setTimeout(function () {
-                    var isLeader = _this._elector.isLeader;
-                    _this.loggerService.logWarning("isLeaderCheck > prefix: " + _this._prefix + " > currentRandomId: " + _this._currentRandomId + " > inside setTimeout isLeader = " + isLeader);
-                    resolve(isLeader);
-                }, 1000);
+                var isLeaderResult = _this._elector.isLeader;
+                _this.loggerService.logDebug("isLeaderCheck > isLeader result = " + isLeaderResult + " > prefix: " + _this._prefix + " > currentRandomId: " + _this._currentRandomId);
+                resolve(isLeaderResult);
             });
         };
         TabsSynchronizationService.prototype.getSilentRenewFinishedObservable = function () {
@@ -4035,11 +4033,8 @@
         // Logs out on the server and the local client.
         // If the server state has changed, checksession, then only a local logout.
         LogoffRevocationService.prototype.logoff = function (urlHandler) {
-            var _this = this;
             this.loggerService.logDebug('logoff, remove auth ');
-            setTimeout(function () {
-                _this.tabsSynchronizationService.closeTabSynchronization();
-            }, 1000);
+            this.tabsSynchronizationService.closeTabSynchronization();
             var endSessionUrl = this.getEndSessionUrl();
             this.flowsService.resetAuthorizationData();
             if (!endSessionUrl) {
