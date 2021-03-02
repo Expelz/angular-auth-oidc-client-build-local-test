@@ -3448,7 +3448,7 @@
                             else {
                                 currentRetry = 1;
                             }
-                            return _this.silentRenewCase(customParams, currentRetry);
+                            return _this.silentRenewCase(customParams, currentRetry).pipe(operators.take(1));
                         }
                         throw error;
                     }));
@@ -3464,7 +3464,7 @@
                             else {
                                 currentRetry = 1;
                             }
-                            return _this.silentRenewCase(customParams, currentRetry);
+                            return _this.silentRenewCase(customParams, currentRetry).pipe(operators.take(1));
                         }
                         throw error;
                     }), operators.map(function () {

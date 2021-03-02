@@ -2912,7 +2912,7 @@ class RefreshSessionService {
                         else {
                             currentRetry = 1;
                         }
-                        return this.silentRenewCase(customParams, currentRetry);
+                        return this.silentRenewCase(customParams, currentRetry).pipe(take(1));
                     }
                     throw error;
                 }));
@@ -2928,7 +2928,7 @@ class RefreshSessionService {
                         else {
                             currentRetry = 1;
                         }
-                        return this.silentRenewCase(customParams, currentRetry);
+                        return this.silentRenewCase(customParams, currentRetry).pipe(take(1));
                     }
                     throw error;
                 }), map(() => {
