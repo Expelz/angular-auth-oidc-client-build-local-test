@@ -3453,7 +3453,18 @@
                 }
                 else {
                     _this.loggerService.logDebug("forceRefreshSession WE ARE NOT NOT NOT LEADER");
-                    return _this.tabsSynchronizationService.getSilentRenewFinishedObservable().pipe(operators.take(1), operators.timeout(5000), operators.catchError(function (error) {
+                    return _this.tabsSynchronizationService.getSilentRenewFinishedObservable().pipe(operators.take(1), operators.timeout(5000), operators.map(function () {
+                        var isAuthenticated = _this.authStateService.areAuthStorageTokensValid();
+                        _this.loggerService.logDebug("forceRefreshSession WE ARE NOT NOT NOT LEADER > getSilentRenewFinishedObservable EMMITS VALUE > isAuthenticated = " + isAuthenticated);
+                        if (isAuthenticated) {
+                            return {
+                                idToken: _this.authStateService.getIdToken(),
+                                accessToken: _this.authStateService.getAccessToken(),
+                            };
+                        }
+                        _this.loggerService.logError("forceRefreshSession WE ARE NOT NOT NOT LEADER > getSilentRenewFinishedObservable EMMITS VALUE > isAuthenticated FALSE WE DONT KNOW WAHT TO DO WITH THIS");
+                        return null;
+                    }), operators.catchError(function (error) {
                         if (error instanceof rxjs.TimeoutError) {
                             _this.loggerService.logWarning("forceRefreshSession WE ARE NOT NOT NOT LEADER > occured TIMEOUT ERROR SO WE RETRY: this.forceRefreshSession(customParams)");
                             if (currentRetry) {
@@ -3465,17 +3476,6 @@
                             return _this.silentRenewCase(customParams, currentRetry).pipe(operators.take(1));
                         }
                         throw error;
-                    }), operators.map(function () {
-                        var isAuthenticated = _this.authStateService.areAuthStorageTokensValid();
-                        _this.loggerService.logDebug("forceRefreshSession WE ARE NOT NOT NOT LEADER > getSilentRenewFinishedObservable EMMITS VALUE > isAuthenticated = " + isAuthenticated);
-                        if (isAuthenticated) {
-                            return {
-                                idToken: _this.authStateService.getIdToken(),
-                                accessToken: _this.authStateService.getAccessToken(),
-                            };
-                        }
-                        _this.loggerService.logError("forceRefreshSession WE ARE NOT NOT NOT LEADER > getSilentRenewFinishedObservable EMMITS VALUE > isAuthenticated FALSE WE DONT KNOW WAHT TO DO WITH THIS");
-                        return null;
                     }));
                 }
             }), operators.catchError(function (error) {

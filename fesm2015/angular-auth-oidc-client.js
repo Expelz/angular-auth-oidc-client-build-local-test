@@ -2917,7 +2917,18 @@ class RefreshSessionService {
             }
             else {
                 this.loggerService.logDebug(`forceRefreshSession WE ARE NOT NOT NOT LEADER`);
-                return this.tabsSynchronizationService.getSilentRenewFinishedObservable().pipe(take(1), timeout(5000), catchError((error) => {
+                return this.tabsSynchronizationService.getSilentRenewFinishedObservable().pipe(take(1), timeout(5000), map(() => {
+                    const isAuthenticated = this.authStateService.areAuthStorageTokensValid();
+                    this.loggerService.logDebug(`forceRefreshSession WE ARE NOT NOT NOT LEADER > getSilentRenewFinishedObservable EMMITS VALUE > isAuthenticated = ${isAuthenticated}`);
+                    if (isAuthenticated) {
+                        return {
+                            idToken: this.authStateService.getIdToken(),
+                            accessToken: this.authStateService.getAccessToken(),
+                        };
+                    }
+                    this.loggerService.logError(`forceRefreshSession WE ARE NOT NOT NOT LEADER > getSilentRenewFinishedObservable EMMITS VALUE > isAuthenticated FALSE WE DONT KNOW WAHT TO DO WITH THIS`);
+                    return null;
+                }), catchError((error) => {
                     if (error instanceof TimeoutError) {
                         this.loggerService.logWarning(`forceRefreshSession WE ARE NOT NOT NOT LEADER > occured TIMEOUT ERROR SO WE RETRY: this.forceRefreshSession(customParams)`);
                         if (currentRetry) {
@@ -2929,17 +2940,6 @@ class RefreshSessionService {
                         return this.silentRenewCase(customParams, currentRetry).pipe(take(1));
                     }
                     throw error;
-                }), map(() => {
-                    const isAuthenticated = this.authStateService.areAuthStorageTokensValid();
-                    this.loggerService.logDebug(`forceRefreshSession WE ARE NOT NOT NOT LEADER > getSilentRenewFinishedObservable EMMITS VALUE > isAuthenticated = ${isAuthenticated}`);
-                    if (isAuthenticated) {
-                        return {
-                            idToken: this.authStateService.getIdToken(),
-                            accessToken: this.authStateService.getAccessToken(),
-                        };
-                    }
-                    this.loggerService.logError(`forceRefreshSession WE ARE NOT NOT NOT LEADER > getSilentRenewFinishedObservable EMMITS VALUE > isAuthenticated FALSE WE DONT KNOW WAHT TO DO WITH THIS`);
-                    return null;
                 }));
             }
         }), catchError((error) => {
