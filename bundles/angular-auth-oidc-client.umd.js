@@ -1643,6 +1643,17 @@
         FlowsDataService.prototype.setNonce = function (nonce) {
             this.storagePersistanceService.write('authNonce', nonce);
         };
+        FlowsDataService.prototype.getAuthStateControlWithoutAnyCheck = function () {
+            var json = this.storagePersistanceService.read('authStateControl');
+            var storageObject = !!json ? JSON.parse(json) : null;
+            this.loggerService.logDebug("getAuthStateControlWithoutAnyCheck > currentTime: " + new Date().toTimeString() + " > storageObject see inner details:", storageObject);
+            if (storageObject) {
+                this.loggerService.logDebug("getAuthStateControlWithoutAnyCheck > storageObject.lauchedFrom " + storageObject.lauchedFrom + " > STATE SUCCESSFULLY RETURNED " + storageObject.state + " > currentTime: " + new Date().toTimeString());
+                return storageObject.state;
+            }
+            this.loggerService.logWarning("getAuthStateControlWithoutAnyCheck > storageObject IS NULL RETURN FALSE > currentTime: " + new Date().toTimeString());
+            return false;
+        };
         FlowsDataService.prototype.getAuthStateControl = function (authStateLauchedType) {
             if (authStateLauchedType === void 0) { authStateLauchedType = null; }
             var json = this.storagePersistanceService.read('authStateControl');
@@ -2372,7 +2383,7 @@
         };
         StateValidationService.prototype.validateState = function (callbackContext) {
             var toReturn = new StateValidationResult();
-            var authStateControl = this.flowsDataService.getAuthStateControl();
+            var authStateControl = this.flowsDataService.getAuthStateControlWithoutAnyCheck();
             if (!this.tokenValidationService.validateStateFromHashCallback(callbackContext.authResult.state, authStateControl)) {
                 this.loggerService.logWarning('authorizedCallback incorrect state');
                 toReturn.state = exports.ValidationResult.StatesDoNotMatch;

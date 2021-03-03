@@ -1231,6 +1231,17 @@ class FlowsDataService {
     setNonce(nonce) {
         this.storagePersistanceService.write('authNonce', nonce);
     }
+    getAuthStateControlWithoutAnyCheck() {
+        const json = this.storagePersistanceService.read('authStateControl');
+        const storageObject = !!json ? JSON.parse(json) : null;
+        this.loggerService.logDebug(`getAuthStateControlWithoutAnyCheck > currentTime: ${new Date().toTimeString()} > storageObject see inner details:`, storageObject);
+        if (storageObject) {
+            this.loggerService.logDebug(`getAuthStateControlWithoutAnyCheck > storageObject.lauchedFrom ${storageObject.lauchedFrom} > STATE SUCCESSFULLY RETURNED ${storageObject.state} > currentTime: ${new Date().toTimeString()}`);
+            return storageObject.state;
+        }
+        this.loggerService.logWarning(`getAuthStateControlWithoutAnyCheck > storageObject IS NULL RETURN FALSE > currentTime: ${new Date().toTimeString()}`);
+        return false;
+    }
     getAuthStateControl(authStateLauchedType = null) {
         const json = this.storagePersistanceService.read('authStateControl');
         const storageObject = !!json ? JSON.parse(json) : null;
@@ -1910,7 +1921,7 @@ class StateValidationService {
     }
     validateState(callbackContext) {
         const toReturn = new StateValidationResult();
-        const authStateControl = this.flowsDataService.getAuthStateControl();
+        const authStateControl = this.flowsDataService.getAuthStateControlWithoutAnyCheck();
         if (!this.tokenValidationService.validateStateFromHashCallback(callbackContext.authResult.state, authStateControl)) {
             this.loggerService.logWarning('authorizedCallback incorrect state');
             toReturn.state = ValidationResult.StatesDoNotMatch;
