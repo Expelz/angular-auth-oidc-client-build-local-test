@@ -2599,7 +2599,7 @@
         };
         FlowsService.prototype.processSilentRenewCodeFlowCallback = function (firstContext) {
             var _this = this;
-            return this.codeFlowCodeRequest(firstContext).pipe(operators.switchMap(function (callbackContext) { return _this.callbackHistoryAndResetJwtKeys(callbackContext); }), operators.switchMap(function (callbackContext) { return _this.callbackStateValidation(callbackContext); }), operators.switchMap(function (callbackContext) { return _this.callbackUser(callbackContext); }));
+            return this.codeFlowCodeRequestOnlyForSilentRenew(firstContext).pipe(operators.switchMap(function (callbackContext) { return _this.callbackHistoryAndResetJwtKeys(callbackContext); }), operators.switchMap(function (callbackContext) { return _this.callbackStateValidation(callbackContext); }), operators.switchMap(function (callbackContext) { return _this.callbackUser(callbackContext); }));
         };
         FlowsService.prototype.processImplicitFlowCallback = function (hash) {
             var _this = this;
@@ -2732,6 +2732,48 @@
             headers = headers.set('Content-Type', 'application/x-www-form-urlencoded');
             var bodyForCodeFlow = this.urlService.createBodyForCodeFlowCodeRequest(callbackContext.code);
             return this.dataService.post(tokenEndpoint, bodyForCodeFlow, headers).pipe(operators.switchMap(function (response) {
+                var authResult = new Object();
+                authResult = response;
+                authResult.state = callbackContext.state;
+                authResult.session_state = callbackContext.sessionState;
+                callbackContext.authResult = authResult;
+                return rxjs.of(callbackContext);
+            }), operators.catchError(function (error) {
+                var errorMessage = "OidcService code request " + _this.configurationProvider.openIDConfiguration.stsServer;
+                _this.loggerService.logError(errorMessage, error);
+                return rxjs.throwError(errorMessage);
+            }));
+        };
+        // STEP 2 Code Flow Silent Renew starts here OUR FLOW
+        FlowsService.prototype.codeFlowCodeRequestOnlyForSilentRenew = function (callbackContext) {
+            var _this = this;
+            var isStateCorrect = this.tokenValidationService.validateStateFromHashCallback(callbackContext.state, this.flowsDataService.getAuthStateControl());
+            if (!isStateCorrect) {
+                this.loggerService.logWarning('codeFlowCodeRequest incorrect state');
+                return rxjs.throwError('codeFlowCodeRequest incorrect state');
+            }
+            var authWellKnown = this.storagePersistanceService.read('authWellKnownEndPoints');
+            var tokenEndpoint = authWellKnown === null || authWellKnown === void 0 ? void 0 : authWellKnown.tokenEndpoint;
+            if (!tokenEndpoint) {
+                return rxjs.throwError('Token Endpoint not defined');
+            }
+            var headers = new i1.HttpHeaders();
+            headers = headers.set('Content-Type', 'application/x-www-form-urlencoded');
+            var bodyForCodeFlow = this.urlService.createBodyForCodeFlowCodeRequest(callbackContext.code);
+            return this.dataService.post(tokenEndpoint, bodyForCodeFlow, headers).pipe(operators.switchMap(function (response) {
+                var currentState = _this.flowsDataService.getAuthStateControl();
+                var isStateCorrectAfterTokenRequest = _this.tokenValidationService.validateStateFromHashCallback(callbackContext.state, currentState);
+                if (!isStateCorrectAfterTokenRequest) {
+                    _this.loggerService.logError("silentRenewEventHandler > AFTER code request callback > states don't match stateFromUrl: " + callbackContext.state + " currentState: " + currentState);
+                    callbackContext.validationResult = {
+                        accessToken: null,
+                        authResponseIsValid: null,
+                        decodedIdToken: null,
+                        idToken: null,
+                        state: exports.ValidationResult.StatesDoNotMatch
+                    };
+                    return (rxjs.of(callbackContext));
+                }
                 var authResult = new Object();
                 authResult = response;
                 authResult.state = callbackContext.state;
@@ -3131,6 +3173,7 @@
             var currentState = this.flowsDataService.getAuthStateControl();
             if (stateFromUrl !== currentState) {
                 this.loggerService.logError("silentRenewEventHandler > states don't match stateFromUrl: " + stateFromUrl + " currentState: " + currentState);
+                return;
             }
             this.tabsSynchronizationService.isLeaderCheck().then(function (isLeader) {
                 if (!isLeader)
@@ -3144,6 +3187,11 @@
                     callback$ = _this.implicitFlowCallbackService.authorizedImplicitFlowCallback(e.detail);
                 }
                 callback$.subscribe(function (callbackContext) {
+                    var _a;
+                    if (((_a = callbackContext === null || callbackContext === void 0 ? void 0 : callbackContext.validationResult) === null || _a === void 0 ? void 0 : _a.state) === exports.ValidationResult.StatesDoNotMatch) {
+                        _this.loggerService.logError("silentRenewEventHandler > inside subscribe for codeRequestCallback > states don't match stateFromUrl: " + stateFromUrl + " currentState: " + currentState);
+                        return;
+                    }
                     _this.refreshSessionWithIFrameCompletedInternal$.next(callbackContext);
                     _this.flowsDataService.resetSilentRenewRunning();
                     _this.tabsSynchronizationService.sendSilentRenewFinishedNotification();

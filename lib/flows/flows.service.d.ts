@@ -37,6 +37,7 @@ export declare class FlowsService {
     private refreshSessionWithRefreshTokens;
     private refreshTokensRequestTokens;
     private codeFlowCodeRequest;
+    private codeFlowCodeRequestOnlyForSilentRenew;
     private callbackHistoryAndResetJwtKeys;
     private callbackStateValidation;
     private callbackUser;
