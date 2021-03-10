@@ -2599,7 +2599,14 @@
         };
         FlowsService.prototype.processSilentRenewCodeFlowCallback = function (firstContext) {
             var _this = this;
-            return this.codeFlowCodeRequestOnlyForSilentRenew(firstContext).pipe(operators.switchMap(function (callbackContext) { return _this.callbackHistoryAndResetJwtKeys(callbackContext); }), operators.switchMap(function (callbackContext) { return _this.callbackStateValidation(callbackContext); }), operators.switchMap(function (callbackContext) { return _this.callbackUser(callbackContext); }));
+            return this.codeFlowCodeRequestOnlyForSilentRenew(firstContext).pipe(operators.switchMap(function (callbackContext) {
+                var _a;
+                if (((_a = callbackContext === null || callbackContext === void 0 ? void 0 : callbackContext.validationResult) === null || _a === void 0 ? void 0 : _a.state) === exports.ValidationResult.StatesDoNotMatch) {
+                    _this.loggerService.logError("processSilentRenewCodeFlowCallback > AFTER TOKEN REQUEST STATES DONT MATCH VALIDATION RESULT = ValidationResult.StatesDoNotMatch");
+                    return rxjs.of(callbackContext);
+                }
+                return rxjs.of(callbackContext).pipe(operators.switchMap(function (callbackContext) { return _this.callbackHistoryAndResetJwtKeys(callbackContext); }), operators.switchMap(function (callbackContext) { return _this.callbackStateValidation(callbackContext); }), operators.switchMap(function (callbackContext) { return _this.callbackUser(callbackContext); }));
+            }));
         };
         FlowsService.prototype.processImplicitFlowCallback = function (hash) {
             var _this = this;
