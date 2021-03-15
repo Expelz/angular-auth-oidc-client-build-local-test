@@ -1,5 +1,5 @@
 import { isPlatformBrowser, DOCUMENT, CommonModule } from '@angular/common';
-import { HttpClient, HttpHeaders, HttpParams, HttpResponse, HttpClientModule } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams, HttpResponse, HttpErrorResponse, HttpClientModule } from '@angular/common/http';
 import { ɵɵinject, ɵɵdefineInjectable, ɵsetClassMetadata, Injectable, PLATFORM_ID, Inject, NgZone, RendererFactory2, ɵɵdefineNgModule, ɵɵdefineInjector, ɵɵsetNgModuleScope, NgModule } from '@angular/core';
 import { ReplaySubject, BehaviorSubject, of, Observable, throwError, Subject, from, forkJoin, TimeoutError } from 'rxjs';
 import { KEYUTIL, KJUR, hextob64u } from 'jsrsasign-reduced';
@@ -2661,6 +2661,10 @@ class SilentRenewService {
             existingIdToken: null,
         };
         return this.flowsService.processSilentRenewCodeFlowCallback(callbackContext).pipe(catchError((errorFromFlow) => {
+            if (errorFromFlow instanceof HttpErrorResponse && errorFromFlow.status === 504) {
+                this.loggerService.logError('processSilentRenewCodeFlowCallback catchError statement re-throw error without any reset. Original error ' + errorFromFlow);
+                return throwError(errorFromFlow);
+            }
             this.intervallService.stopPeriodicallTokenCheck();
             this.flowsService.resetAuthorizationData();
             return throwError(errorFromFlow);
@@ -2702,6 +2706,10 @@ class SilentRenewService {
                 this.flowsDataService.resetSilentRenewRunning();
                 this.tabsSynchronizationService.sendSilentRenewFinishedNotification();
             }, (err) => {
+                if (err instanceof HttpErrorResponse && err.status === 504) {
+                    this.loggerService.logError('silentRenewEventHandler from Callback catch timeout error so we finish this process. Original error ' + err);
+                    return;
+                }
                 this.loggerService.logError('Error: ' + err);
                 this.refreshSessionWithIFrameCompletedInternal$.next(null);
                 this.flowsDataService.resetSilentRenewRunning();

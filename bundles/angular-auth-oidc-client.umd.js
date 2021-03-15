@@ -3161,6 +3161,10 @@
                 existingIdToken: null,
             };
             return this.flowsService.processSilentRenewCodeFlowCallback(callbackContext).pipe(operators.catchError(function (errorFromFlow) {
+                if (errorFromFlow instanceof i1.HttpErrorResponse && errorFromFlow.status === 504) {
+                    _this.loggerService.logError('processSilentRenewCodeFlowCallback catchError statement re-throw error without any reset. Original error ' + errorFromFlow);
+                    return rxjs.throwError(errorFromFlow);
+                }
                 _this.intervallService.stopPeriodicallTokenCheck();
                 _this.flowsService.resetAuthorizationData();
                 return rxjs.throwError(errorFromFlow);
@@ -3203,6 +3207,10 @@
                     _this.flowsDataService.resetSilentRenewRunning();
                     _this.tabsSynchronizationService.sendSilentRenewFinishedNotification();
                 }, function (err) {
+                    if (err instanceof i1.HttpErrorResponse && err.status === 504) {
+                        _this.loggerService.logError('silentRenewEventHandler from Callback catch timeout error so we finish this process. Original error ' + err);
+                        return;
+                    }
                     _this.loggerService.logError('Error: ' + err);
                     _this.refreshSessionWithIFrameCompletedInternal$.next(null);
                     _this.flowsDataService.resetSilentRenewRunning();
