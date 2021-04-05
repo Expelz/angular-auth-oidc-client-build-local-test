@@ -1477,6 +1477,25 @@ class UrlService {
         }
         return oneLineTrim `${dataForBody}&redirect_uri=${redirectUrl}`;
     }
+    createBodyForCodeFlowCodeRequestOnlyForSilentRenew(code) {
+        const codeVerifier = this.flowsDataService.getCodeVerifier();
+        if (!codeVerifier) {
+            this.loggerService.logError(`CodeVerifier is not set `, codeVerifier);
+            return null;
+        }
+        const clientId = this.getClientId();
+        if (!clientId) {
+            return null;
+        }
+        const dataForBody = oneLineTrim `grant_type=authorization_code
+            &client_id=${clientId}
+            &code_verifier=${codeVerifier}
+            &code=${code}`;
+        const silentRenewUrl = this.getSilentRenewUrl();
+        const body = oneLineTrim `${dataForBody}&redirect_uri=${silentRenewUrl}`;
+        this.loggerService.logDebug(`From createBodyForCodeFlowCodeRequestOnlyForSilentRenew BODY IS: `, body);
+        return body;
+    }
     createBodyForCodeFlowRefreshTokensRequest(refreshtoken, customParams) {
         const clientId = this.getClientId();
         if (!clientId) {
@@ -2294,7 +2313,7 @@ class FlowsService {
         }
         let headers = new HttpHeaders();
         headers = headers.set('Content-Type', 'application/x-www-form-urlencoded');
-        const bodyForCodeFlow = this.urlService.createBodyForCodeFlowCodeRequest(callbackContext.code);
+        const bodyForCodeFlow = this.urlService.createBodyForCodeFlowCodeRequestOnlyForSilentRenew(callbackContext.code);
         return this.dataService.post(tokenEndpoint, bodyForCodeFlow, headers).pipe(switchMap((response) => {
             const currentState = this.flowsDataService.getAuthStateControl();
             const isStateCorrectAfterTokenRequest = this.tokenValidationService.validateStateFromHashCallback(callbackContext.state, currentState);
@@ -2305,9 +2324,9 @@ class FlowsService {
                     authResponseIsValid: null,
                     decodedIdToken: null,
                     idToken: null,
-                    state: ValidationResult.StatesDoNotMatch
+                    state: ValidationResult.StatesDoNotMatch,
                 };
-                return (of(callbackContext));
+                return of(callbackContext);
             }
             let authResult = new Object();
             authResult = response;

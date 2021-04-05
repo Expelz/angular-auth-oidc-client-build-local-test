@@ -26,6 +26,7 @@ export declare class UrlService {
     createRevocationEndpointBodyRefreshToken(token: any): string;
     getRevocationEndpointUrl(): any;
     createBodyForCodeFlowCodeRequest(code: string): string;
+    createBodyForCodeFlowCodeRequestOnlyForSilentRenew(code: string): string;
     createBodyForCodeFlowRefreshTokensRequest(refreshtoken: string, customParams?: {
         [key: string]: string | number | boolean;
     }): string;

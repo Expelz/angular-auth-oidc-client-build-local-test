@@ -1891,13 +1891,29 @@
             }
             return commonTags.oneLineTrim(templateObject_3 || (templateObject_3 = __makeTemplateObject(["", "&redirect_uri=", ""], ["", "&redirect_uri=", ""])), dataForBody, redirectUrl);
         };
+        UrlService.prototype.createBodyForCodeFlowCodeRequestOnlyForSilentRenew = function (code) {
+            var codeVerifier = this.flowsDataService.getCodeVerifier();
+            if (!codeVerifier) {
+                this.loggerService.logError("CodeVerifier is not set ", codeVerifier);
+                return null;
+            }
+            var clientId = this.getClientId();
+            if (!clientId) {
+                return null;
+            }
+            var dataForBody = commonTags.oneLineTrim(templateObject_4 || (templateObject_4 = __makeTemplateObject(["grant_type=authorization_code\n            &client_id=", "\n            &code_verifier=", "\n            &code=", ""], ["grant_type=authorization_code\n            &client_id=", "\n            &code_verifier=", "\n            &code=", ""])), clientId, codeVerifier, code);
+            var silentRenewUrl = this.getSilentRenewUrl();
+            var body = commonTags.oneLineTrim(templateObject_5 || (templateObject_5 = __makeTemplateObject(["", "&redirect_uri=", ""], ["", "&redirect_uri=", ""])), dataForBody, silentRenewUrl);
+            this.loggerService.logDebug("From createBodyForCodeFlowCodeRequestOnlyForSilentRenew BODY IS: ", body);
+            return body;
+        };
         UrlService.prototype.createBodyForCodeFlowRefreshTokensRequest = function (refreshtoken, customParams) {
             var e_1, _b;
             var clientId = this.getClientId();
             if (!clientId) {
                 return null;
             }
-            var dataForBody = commonTags.oneLineTrim(templateObject_4 || (templateObject_4 = __makeTemplateObject(["grant_type=refresh_token\n            &client_id=", "\n            &refresh_token=", ""], ["grant_type=refresh_token\n            &client_id=", "\n            &refresh_token=", ""])), clientId, refreshtoken);
+            var dataForBody = commonTags.oneLineTrim(templateObject_6 || (templateObject_6 = __makeTemplateObject(["grant_type=refresh_token\n            &client_id=", "\n            &refresh_token=", ""], ["grant_type=refresh_token\n            &client_id=", "\n            &refresh_token=", ""])), clientId, refreshtoken);
             if (customParams) {
                 var customParamsToAdd = Object.assign({}, (customParams || {}));
                 try {
@@ -2090,7 +2106,7 @@
                 type: i0.Injectable
             }], function () { return [{ type: ConfigurationProvider }, { type: LoggerService }, { type: FlowsDataService }, { type: FlowHelper }, { type: TokenValidationService }, { type: StoragePersistanceService }]; }, null);
     })();
-    var templateObject_1, templateObject_2, templateObject_3, templateObject_4;
+    var templateObject_1, templateObject_2, templateObject_3, templateObject_4, templateObject_5, templateObject_6;
 
     var SigninKeyDataService = /** @class */ (function () {
         function SigninKeyDataService(storagePersistanceService, loggerService, dataService) {
@@ -2766,7 +2782,7 @@
             }
             var headers = new i1.HttpHeaders();
             headers = headers.set('Content-Type', 'application/x-www-form-urlencoded');
-            var bodyForCodeFlow = this.urlService.createBodyForCodeFlowCodeRequest(callbackContext.code);
+            var bodyForCodeFlow = this.urlService.createBodyForCodeFlowCodeRequestOnlyForSilentRenew(callbackContext.code);
             return this.dataService.post(tokenEndpoint, bodyForCodeFlow, headers).pipe(operators.switchMap(function (response) {
                 var currentState = _this.flowsDataService.getAuthStateControl();
                 var isStateCorrectAfterTokenRequest = _this.tokenValidationService.validateStateFromHashCallback(callbackContext.state, currentState);
@@ -2777,9 +2793,9 @@
                         authResponseIsValid: null,
                         decodedIdToken: null,
                         idToken: null,
-                        state: exports.ValidationResult.StatesDoNotMatch
+                        state: exports.ValidationResult.StatesDoNotMatch,
                     };
-                    return (rxjs.of(callbackContext));
+                    return rxjs.of(callbackContext);
                 }
                 var authResult = new Object();
                 authResult = response;
