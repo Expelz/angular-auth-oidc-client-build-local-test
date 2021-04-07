@@ -1380,8 +1380,8 @@
             this.checkSessionReceived = false;
             this.lastIFrameRefresh = 0;
             this.outstandingMessages = 0;
-            this.heartBeatInterval = 3000;
-            this.iframeRefreshInterval = 60000;
+            this.heartBeatInterval = 15000;
+            this.iframeRefreshInterval = 300000;
             this.checkSessionChangedInternal$ = new rxjs.BehaviorSubject(false);
         }
         Object.defineProperty(CheckSessionService.prototype, "checkSessionChanged$", {
