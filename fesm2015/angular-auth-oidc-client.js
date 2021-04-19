@@ -2337,7 +2337,7 @@ class FlowsService {
         }), catchError((error) => {
             const errorMessage = `OidcService code request ${this.configurationProvider.openIDConfiguration.stsServer}`;
             this.loggerService.logError(errorMessage, error);
-            return throwError(errorMessage);
+            return throwError(error);
         }));
     }
     // STEP 3 Code Flow, STEP 2 Implicit Flow, STEP 3 Refresh Token

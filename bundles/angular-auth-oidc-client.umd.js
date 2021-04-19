@@ -2806,7 +2806,7 @@
             }), operators.catchError(function (error) {
                 var errorMessage = "OidcService code request " + _this.configurationProvider.openIDConfiguration.stsServer;
                 _this.loggerService.logError(errorMessage, error);
-                return rxjs.throwError(errorMessage);
+                return rxjs.throwError(error);
             }));
         };
         // STEP 3 Code Flow, STEP 2 Implicit Flow, STEP 3 Refresh Token
